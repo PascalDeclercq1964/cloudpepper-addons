@@ -21,7 +21,6 @@ class MKCancelOrder(models.TransientModel):
     bol_cancel_item_line_ids = fields.One2many('bol.cancel.item.line', 'wizard_id', string="Order Items")
 
     def do_cancel_in_bol(self):
-        return True
         active_id = self._context.get('active_id')
         order_id = self.env['sale.order'].browse(active_id)
         if not order_id:

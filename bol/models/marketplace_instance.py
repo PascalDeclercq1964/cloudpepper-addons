@@ -19,7 +19,7 @@ ORDER_FILTER_STATUS = [('OPEN', 'OPEN'), ('SHIPPED', 'SHIPPED'), ('ALL', 'ALL')]
 class MkInstance(models.Model):
     _inherit = "mk.instance"
 
-    marketplace = fields.Selection(selection_add=[('bol', _("Bol.com"))], ondelete={'bol': 'set default'}, string='Marketplace')
+    marketplace = fields.Selection(selection_add=[('bol', "Bol.com")], ondelete={'bol': 'set default'}, string='Marketplace')
 
     bol_client_id = fields.Char("Client ID", copy=False)
     bol_client_secret = fields.Char("Client Secret", copy=False)

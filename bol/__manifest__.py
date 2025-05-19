@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Bol.com Integration",
-    "version": "1.0.0",
+    "version": "1.0.5",
     "category": "eCommerce",
     'summary': 'Integrate & Manage Bol.com Operations from Odoo by using Odoo Bol.com Integration or Bol.com Odoo Integration or Bol Integration. Odoo BOL.com integration, BOL.com integration with Odoo, Odoo integration for BOL.com, Bol.com Connector, Bol.com Connector Odoo, We also provide modules like shipping and marketplace dhl integration express integration fedex integration ups integration gls integration usps integration stamps.com integration shipstation integration easyship integration amazon integration sendcloud integration woocommerce integration shopify integration',
 
@@ -52,6 +52,6 @@
     'installable': True,
     'application': True,
     'qweb': [],
-    "price": "329.99",
+    "price": "479.99",
     "currency": "EUR",
 }

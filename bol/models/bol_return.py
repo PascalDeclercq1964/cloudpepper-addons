@@ -61,7 +61,7 @@ class BolReturn(models.Model):
         if not self.handling_action:
             raise MarketplaceException(_('Handling Action is mandatory in order to handle this return.'))
         response = self.mk_instance_id._send_bol_request('retailer/returns/{}'.format(self.rma_id), {'handlingResult': self.handling_action, 'quantityReturned': self.received_quantity}, method="PUT")
-        process_id = self.env['bol.process.status'].create_or_update_process_status(response, self.mk_instance_id, res_model=self._name, res_id=self.id)
+        process_id = self.env['bol.process.status'].create_or_update_process_status(response, self.mk_instance_id)
         while True:
             process_id.get_process_status()
             if process_id.state == 'success':
@@ -154,6 +154,7 @@ class BolReturn(models.Model):
         return lines
 
     def process_import_return_from_bol_ts(self, bol_return_dict, mk_instance_id):
+        bol_return = self.env['bol.return']
         mk_log_id = self.env.context.get('mk_log_id', False)
         queue_line_id = self.env.context.get('queue_line_id', False)
         return_id = bol_return_dict.get('returnId')
@@ -182,7 +183,10 @@ class BolReturn(models.Model):
                 self.env['mk.log'].create_update_log(mk_log_id=mk_log_id,
                                                      mk_log_line_dict={'error': [{'log_message': log_message, 'queue_job_line_id': queue_line_id and queue_line_id.id or False}]})
                 return False
-            self.create({
+            return_reason_comments = return_item.get('returnReason', {}).get('detailedReason', '')
+            if return_item.get('returnReason', {}).get('customerComments', ''):
+                return_reason_comments += '\n' + return_item.get('returnReason', {}).get('customerComments', '')
+            bol_return |= self.create({
                 'mk_id': return_id,
                 'rma_id': rma_id,
                 'order_id': order_id.id,
@@ -190,14 +194,14 @@ class BolReturn(models.Model):
                 'registration_date': convert_bol_datetime_to_utc(return_date),
                 'expected_quantity': return_item.get('expectedQuantity'),
                 'return_reason': return_item.get('returnReason', {}).get('mainReason'),
-                'return_reason_comments': return_item.get('returnReason', {}).get('detailedReason'),
+                'return_reason_comments': return_reason_comments,
                 'mk_instance_id': mk_instance_id.id,
                 'state': 'handled' if return_item.get('handled') else 'unhandled',
                 'processing_result_ids': processing_line_vals,
             })
             log_message = _('IMPORT RETURN : RMA# {} ({}) successfully created'.format(rma_id, return_id))
             self.env['mk.log'].create_update_log(mk_log_id=mk_log_id, mk_log_line_dict={'success': [{'log_message': log_message, 'queue_job_line_id': queue_line_id and queue_line_id.id or False}]})
-        return True
+        return bol_return
 
     def bol_import_returns(self, mk_instance_id, from_date=False):
         mk_log_id = self.env['mk.log'].create_update_log(mk_instance_id=mk_instance_id, operation_type='import')

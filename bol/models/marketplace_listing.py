@@ -296,7 +296,7 @@ class MkListing(models.Model):
                 response = listing_id.mk_instance_id._send_bol_request('retailer/offers/{}'.format(listing_id.mk_id), request_vals, method="PUT")
                 self.env['bol.process.status'].create_or_update_process_status(response, listing_id.mk_instance_id)
             if operation_wizard.is_set_quantity:
-                for listing_item in listing_id.listing_item_ids.filtered(lambda x: x.mk_listing_id.bol_fulfilment_method == 'FBR' and x.product_id.type not in ['service', 'consu']):
+                for listing_item in listing_id.listing_item_ids.filtered(lambda x: x.mk_listing_id.bol_fulfilment_method == 'FBR' and x.product_id.is_storable):
                     quantity = listing_item.product_id.get_product_stock(listing_item.export_qty_type, listing_item.export_qty_value,
                                                                          listing_id.mk_instance_id.warehouse_id.lot_stock_id, listing_id.mk_instance_id.stock_field_id.name)
                     response = listing_id.mk_instance_id._send_bol_request('retailer/offers/{}/stock'.format(listing_id.mk_id), {'amount': int(min(quantity, 999)) if quantity >= 0 else 0, 'managedByRetailer': True},
@@ -349,7 +349,7 @@ class MkListing(models.Model):
                 log_message = "IMPORT STOCK: Product {} updated to {} quantity with {} location.".format(product_id.display_name, graded_stock, bol_scrap_loc_id.display_name)
                 self.env['mk.log'].create_update_log(mk_log_id=mk_log_id, mk_log_line_dict={'success': [{'log_message': log_message}]})
             if regular_stock > 0:
-                quant_obj.create_or_update_inventory_quant(mk_instance_id.warehouse_id.lot_stock_id.id, product_id, regular_stock, name="Inventory ({} on {})".format(mk_instance_id.name, datetime.now().strftime(DF)),
+                quant_obj.create_or_update_inventory_quant(mk_instance_id.bol_fbb_warehouse_id.lot_stock_id.id, product_id, regular_stock, name="Inventory ({} on {})".format(mk_instance_id.name, datetime.now().strftime(DF)),
                                                            auto_validate=auto_validate)
                 log_message = "IMPORT STOCK: Product {} updated to {} quantity with {} location.".format(product_id.display_name, regular_stock, mk_instance_id.warehouse_id.lot_stock_id.display_name)
                 self.env['mk.log'].create_update_log(mk_log_id=mk_log_id, mk_log_line_dict={'success': [{'log_message': log_message}]})
@@ -411,7 +411,7 @@ class MkListing(models.Model):
             if listing_item_ids:
                 mk_log_id = self.env['mk.log'].create_update_log(mk_instance_id=mk_instance_id, operation_type='export')
                 mk_log_line_dict = {'error': [], 'success': []}
-                for listing_item in listing_item_ids.filtered(lambda x: x.mk_listing_id.bol_fulfilment_method == 'FBR' and x.product_id.type not in ['service', 'consu']):
+                for listing_item in listing_item_ids.filtered(lambda x: x.mk_listing_id.bol_fulfilment_method == 'FBR' and x.product_id.is_storable):
                     quantity = listing_item.product_id.get_product_stock(listing_item.export_qty_type, listing_item.export_qty_value, mk_instance_id.warehouse_id.lot_stock_id, mk_instance_id.stock_field_id.name)
                     try:
                         mk_instance_id._send_bol_request('retailer/offers/{}/stock'.format(listing_item.mk_id), {'amount': int(min(quantity, 999)) if quantity >= 0 else 0, 'managedByRetailer': True}, method="PUT")
