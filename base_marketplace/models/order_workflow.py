@@ -39,6 +39,8 @@ class OrderWorkflowConfig(models.Model):
     is_lock_order = fields.Boolean("Lock Confirmed Order", default=False, help="No longer edit orders once confirmed")
 
     is_create_invoice = fields.Boolean('Create Invoice', default=False)
+    is_force_payment_reference = fields.Boolean(string="Force Payment Reference", default=False,
+                                                help="If enabled, the marketplace order number will be used as the payment reference on the invoice. This helps with reconciliation of payments.")
     is_validate_invoice = fields.Boolean(string='Validate Invoice', default=False)
     is_register_payment = fields.Boolean(string='Register Payment', default=False)
 

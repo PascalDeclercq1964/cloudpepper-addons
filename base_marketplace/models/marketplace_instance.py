@@ -129,8 +129,10 @@ class MkInstance(models.Model):
     last_order_sync_date = fields.Datetime("Last Order Imported On", copy=False)
     import_order_after_date = fields.Datetime("Import Order After", copy=False)
     pricelist_id = fields.Many2one('product.pricelist', string='Pricelist', domain="[('company_id', '=', company_id)]", check_company=True, ondelete="restrict")
-    tax_system = fields.Selection([('default', "Odoo's Default Tax Behaviour (Taxes will be taken from Odoo Product)"), ('according_to_marketplace', 'Follow Marketplace Tax (Create a new tax if not found)')], default='according_to_marketplace',
-                                  help="""1. Odoo's Default Tax Behaviour - Tax will be applied based on Odoo's tax and fiscal position configuration,\n2. Create a new Tax if not found - System will create a new taxes according to the marketplace tax rate if not found in the Odoo.""")
+    tax_system = fields.Selection([('default', "Odoo's Default Tax Behaviour (Taxes will be taken from Odoo Product)"), ('according_to_marketplace', "Follow Marketplace Tax (no fiscal position mappings)"), ('marketplace_with_fiscal_position', 'Follow Marketplace Tax and applies fiscal position mappings')], default='according_to_marketplace',
+                                  help="""1. Odoo Default Tax Behaviour – Taxes are applied using Odoo’s configured tax rates and fiscal position mappings.\n
+                                  2. Follow Marketplace Tax – The system creates a new tax in Odoo matching the marketplace rate if none exists, without applying fiscal position mappings.\n
+                                  3. Follow Marketplace Tax & Apply Fiscal Position – The system creates a new tax in Odoo matching the marketplace rate if none exists and then applies fiscal position mappings.""")
     tax_account_id = fields.Many2one('account.account', string='Tax Account', help="Account that will be set while creating tax.")
     tax_refund_account_id = fields.Many2one('account.account', string='Tax Account on Credit Notes', help="Account that will be set while creating tax.")
     tax_rounding = fields.Integer(string="Tax Rounding", default=2)
@@ -156,15 +158,10 @@ class MkInstance(models.Model):
     mk_order_ids = fields.One2many('sale.order', 'mk_instance_id', string="Orders")
     mk_order_count = fields.Integer("Order Count", compute='_get_mk_kanban_counts')
     mk_invoice_ids = fields.One2many('account.move', 'mk_instance_id', string="Invoices")
-    mk_invoice_count = fields.Integer("Invoice Count", compute='_get_mk_kanban_counts')
-    mk_total_revenue = fields.Float("Revenue", compute='_get_mk_kanban_counts')
     mk_shipment_ids = fields.One2many('stock.picking', 'mk_instance_id', string="Shipments")
-    mk_shipment_count = fields.Integer("Shipment Count", compute='_get_mk_kanban_counts')
     mk_queue_ids = fields.One2many('mk.queue.job', 'mk_instance_id', string="Queue Job")
     mk_queue_count = fields.Integer("Queue Count", compute='_get_mk_kanban_counts')
     mk_customer_ids = fields.Many2many("res.partner", "mk_instance_res_partner_rel", "partner_id", "marketplace_id", string="Customers")
-
-    mk_customer_count = fields.Integer("Customer Count", compute='_get_mk_kanban_counts')
 
     mk_log_ids = fields.One2many('mk.log', 'mk_instance_id', string="Logs")
 

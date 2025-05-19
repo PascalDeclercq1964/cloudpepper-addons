@@ -191,7 +191,7 @@ class MkListing(models.Model):
     def _sync_by_barcode_or_sku(self, mk_instance_id, variant_sku, variant_barcode, variant_id, listing_item_id):
         """Handles product synchronization based on either barcode or SKU."""
         listing_item_id, odoo_product_id = self._sync_by_sku(mk_instance_id, variant_sku, variant_id, listing_item_id)
-        if not listing_item_id:
+        if not listing_item_id and not odoo_product_id:
             listing_item_id, odoo_product_id = self._sync_by_barcode(mk_instance_id, variant_barcode, variant_id, listing_item_id)
         return listing_item_id, odoo_product_id
 
@@ -279,47 +279,6 @@ class MkListing(models.Model):
             error_message, listing_item_validation_dict.get('name'), listing_item_validation_dict.get('id')
         )
 
-    def check_for_duplicate_sku_or_barcode_in_marketplace_product_old(self, sync_product_with, listing_item_validation_dict):
-        mk_sku_list = []
-        mk_barcode_list = []
-        for mk_variant in listing_item_validation_dict.get('variants'):
-            if not mk_variant.get('sku', False) and not mk_variant.get('barcode', False):
-                return False, "IMPORT LISTING: SKU and Barcode not set in Marketplace for Product: {} and Marketplace Listing ID: {}".format(
-                    listing_item_validation_dict.get('name'), listing_item_validation_dict.get('id'))
-            if sync_product_with == 'sku' and not mk_variant.get('sku', False):
-                return False, "IMPORT LISTING: SKU not set in Marketplace for Product: {} and Marketplace Listing ID: {}".format(listing_item_validation_dict.get('name'),
-                                                                                                                                 listing_item_validation_dict.get('id'))
-            elif sync_product_with == 'barcode' and not mk_variant.get('barcode', False):
-                return False, "IMPORT LISTING: Barcode not set in Marketplace for Product: {} and Marketplace Listing ID: {}".format(listing_item_validation_dict.get('name'),
-                                                                                                                                     listing_item_validation_dict.get('id'))
-            mk_variant.get('sku', False) and mk_sku_list.append(mk_variant.get('sku', False))
-            mk_variant.get('barcode', False) and mk_barcode_list.append(mk_variant.get('barcode', False))
-        count_unique_sku = len(set(mk_sku_list))
-        count_unique_barcode = len(set(mk_barcode_list))
-
-        # Always need to check for unique barcode because Odoo isn't allowing to create product with same barcode.
-        if mk_barcode_list and not len(mk_barcode_list) == count_unique_barcode:
-            return False, "IMPORT LISTING: Duplicate Barcode found in Marketplace for Product {} and MK ID: {}".format(listing_item_validation_dict.get('name'),
-                                                                                                                       listing_item_validation_dict.get('id'))
-
-        # checking for duplicate SKU or Barcode from marketplace product.
-        if sync_product_with == 'sku' and not len(mk_sku_list) == count_unique_sku:
-            return False, "IMPORT LISTING: Duplicate SKU found in Marketplace for Product {} and MK ID: {}".format(listing_item_validation_dict.get('name'),
-                                                                                                                   listing_item_validation_dict.get('id'))
-        elif sync_product_with == 'barcode' and not len(mk_barcode_list) == count_unique_barcode:
-            return False, "IMPORT LISTING: Duplicate Barcode found in Marketplace for Product {} and MK ID: {}".format(listing_item_validation_dict.get('name'),
-                                                                                                                       listing_item_validation_dict.get('id'))
-        elif sync_product_with == 'barcode_or_sku':
-            if (mk_barcode_list and len(mk_barcode_list) == count_unique_barcode) or (mk_sku_list and len(mk_sku_list) == count_unique_sku):
-                return True, ""
-            if not len(mk_sku_list) == count_unique_sku:
-                return False, "IMPORT LISTING: Duplicate SKU found in Marketplace for Product {} and MK ID: {}".format(listing_item_validation_dict.get('name'),
-                                                                                                                       listing_item_validation_dict.get('id'))
-            if not len(mk_barcode_list) == count_unique_barcode:
-                return False, "IMPORT LISTING: Duplicate Barcode found in Marketplace for Product {} and MK ID: {}".format(listing_item_validation_dict.get('name'),
-                                                                                                                           listing_item_validation_dict.get('id'))
-        return True, ""
-
     def check_validation_for_import_product(self, sync_product_with, listing_item_validation_dict, product_tmpl_id, existing_odoo_product, existing_mk_product):
         mk_sku_list = []
         mk_barcode_list = []
@@ -339,26 +298,6 @@ class MkListing(models.Model):
                 elif listing_item_id and self.env['product.product'].search([('barcode', '=', barcode), ('id', '!=', listing_item_id.product_id.id)]):
                     return False, "IMPORT LISTING: Duplicate Barcode ({}) found in Odoo for Product {} and MK ID: {}".format(barcode, listing_item_validation_dict.get('name'),
                                                                                                                              listing_item_validation_dict.get('id'))
-
-        # comparing existing Odoo product's variants with the marketplace product's variants only if both having same variation count.
-        if product_tmpl_id:
-            count_mk_no_of_variants = len(listing_item_validation_dict.get('variants'))
-            if count_mk_no_of_variants > 1 and product_tmpl_id.product_variant_count > 1:
-                if count_mk_no_of_variants == product_tmpl_id.product_variant_count:
-                    odoo_products_sku = set([x.default_code if x.default_code else False for x in product_tmpl_id.product_variant_ids])
-                    odoo_products_barcode = set([x.barcode if x.barcode else False for x in product_tmpl_id.product_variant_ids])
-                    if sync_product_with == 'sku':
-                        for mk_sku in mk_sku_list:
-                            if mk_sku not in odoo_products_sku:
-                                return False, "IMPORT LISTING: No SKU found in Odoo Product: {} for Marketplace Product : {} and SKU: {}".format(product_tmpl_id.name,
-                                                                                                                                                 listing_item_validation_dict.get(
-                                                                                                                                                     'name'), mk_sku)
-                    elif sync_product_with == 'barcode':
-                        for mk_barcode in mk_barcode_list:
-                            if mk_barcode not in odoo_products_barcode:
-                                return False, "IMPORT LISTING: No Barcode found in Odoo Product: {} for Marketplace Product : {} and Barcode: {}".format(product_tmpl_id.name,
-                                                                                                                                                         listing_item_validation_dict.get(
-                                                                                                                                                             'name'), mk_barcode)
         return True, ""
 
     def _find_odoo_product_from_marketplace_attribute(self, mk_attribute_dict, product_tmpl_id):

@@ -27,8 +27,7 @@ class SaleOrder(models.Model):
         Returns:
             list: A list of tax IDs in Odoo format [(6, 0, tax_list)].
         """
-        tax_list = []
-
+        tax_ids = self.env['account.tax']
         # Determine tax price inclusion policy
         tax_included_override = 'tax_included' if taxes_included else 'tax_excluded'
 
@@ -37,12 +36,9 @@ class SaleOrder(models.Model):
 
             # Construct the tax title and search for the tax in Odoo
             tax_title = "{} {} {}".format(tax_line['title'], rate, 'Included' if taxes_included else 'Excluded')
-            tax_id = self._find_or_create_tax(tax_title, rate, tax_included_override, mk_instance_id)
+            tax_ids |= self._find_or_create_tax(tax_title, rate, tax_included_override, mk_instance_id)
 
-            if tax_id:
-                tax_list.append(tax_id.id)
-
-        return tax_list and [(6, 0, tax_list)] or []
+        return tax_ids
 
     def _get_tax_rate(self, tax_line, mk_instance_id):
         """
@@ -175,7 +171,7 @@ class SaleOrder(models.Model):
             'company_id': vals.get('company_id', self.env.user.company_id.id),
         }
 
-        fiscal_position_id = order_vals.get('fiscal_position_id', vals.get('fiscal_position_id', False))
+        fiscal_position_id = order_vals.get('fiscal_position_id', (vals.get('fiscal_position_id', False) if mk_instance_id.tax_system != 'according_to_marketplace' else False))
 
         if vals.get('name', False):
             order_vals.update({'name': vals.get('name', '')})
@@ -229,8 +225,10 @@ class SaleOrder(models.Model):
                 invoice_vals.update({'journal_id': self.order_workflow_id.sale_journal_id.id})
             if self.order_workflow_id.force_invoice_date:
                 invoice_vals.update({'invoice_date': self.date_order})
+            if self.order_workflow_id.is_force_payment_reference:
+                invoice_vals.update({'payment_reference': self.mk_order_number})
         if self.mk_instance_id:
-            invoice_vals.update({'mk_instance_id': self.mk_instance_id.id})
+            invoice_vals.update({'mk_instance_id': self.mk_instance_id.id,'fiscal_position_id':self.fiscal_position_id.id})
         return invoice_vals
 
     def _get_order_fulfillment_status(self):
@@ -590,7 +588,7 @@ class SaleOrder(models.Model):
         # While cancel the order, revert the stock move.
         for sale_order in self:
             if sale_order.stock_moves_count:
-                return_wizard_vals = self.env['stock.return.picking'].with_context(active_model='sale.order', active_ids=sale_order.ids).default_get([])
+                return_wizard_vals = self.env['stock.return.picking'].with_context(active_model='sale.order', active_id=sale_order.id).default_get([])
                 return_wizard_id = self.env['stock.return.picking'].create(return_wizard_vals)
                 return_wizard_id.with_context(skip_error=True).action_create_returns_ts()
         return res

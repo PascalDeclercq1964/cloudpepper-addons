@@ -1,6 +1,7 @@
 import hashlib
-from odoo.exceptions import UserError
-from odoo import models, fields, api, _
+
+from odoo import models, fields, _
+from odoo.exceptions import RedirectWarning
 
 
 class ProductTemplate(models.Model):
@@ -212,11 +213,28 @@ class ProductProduct(models.Model):
 
     def _validate_variant_archive(self):
         for variant_id in self:
-            listing_item_id = self.env['mk.listing.item'].search([('product_id', '=', variant_id.id)])
-            if listing_item_id:
-                raise UserError(
-                    _("You cannot archive a product that is already linked to a listing. Please delete the listing '{}' of the '{}' instance first in order to archive the product.".format(
-                        listing_item_id.name, listing_item_id.mk_instance_id.name)))
+            listing_item_ids = self.env['mk.listing.item'].search([('product_id', '=', variant_id.id)])
+            if listing_item_ids:
+                listings = listing_item_ids.mapped('mk_listing_id')
+                listing_form_view = self.env.ref('base_marketplace.mk_listing_form_view')
+                listing_tree_view = self.env.ref('base_marketplace.mk_listing_tree_view')
+
+                action_data = {
+                    'view_mode': 'list',
+                    'name': _('Listing'),
+                    'res_model': 'mk.listing',
+                    'type': 'ir.actions.act_window',
+                    'domain': [('id', 'in', listings.ids)],
+                    'views': [[listing_tree_view.id, 'list'], [listing_form_view.id, 'form']],
+                    'target': 'current',
+                }
+                if len(listings) == 1:
+                    action_data['views'] = [(listing_form_view.id, 'form')]
+                    action_data['res_id'] = listings.id
+
+                error_msg = _(f'You cannot archive a product that is already linked to a listing. Please delete the below listing(s) first in order to archive the product.\n')
+                error_msg += ''.join(f'    - [{listing.mk_instance_id.name}] {listing.name}\n' for listing in listings)
+                raise RedirectWarning(error_msg, action_data, "Open Listing(s)")
 
 
 class ProductTemplateAttributeLine(models.Model):
