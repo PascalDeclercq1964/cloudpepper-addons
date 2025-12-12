@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="otk_cron_process_bulk_translation" model="ir.cron">
+        <field name="name">Process Bulk Translation</field>
+        <field name="interval_number">5</field>
+        <field name="interval_type">minutes</field>
+        <field name="state">code</field>
+        <field name="active" eval="True" />
+        <field name="model_id" ref="otoolkit_auto_translate_fields.model_otk_translation_action"/>
+        <field name="code">model.cron_translate_action()</field>
+    </record>
+</odoo>

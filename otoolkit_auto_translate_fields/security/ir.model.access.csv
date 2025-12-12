@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_bulk_translate,access_bulk_translate,model_otk_translation_bulk_translate,base.group_user,1,1,1,1
+access_translation_action,access_translation_action,model_otk_translation_action,base.group_user,1,1,1,1
+access_translation,access_translation,model_otk_translation,base.group_user,1,1,1,1
+access_translation_config,access_translation_config,model_otk_translation_config,base.group_system,1,1,1,1

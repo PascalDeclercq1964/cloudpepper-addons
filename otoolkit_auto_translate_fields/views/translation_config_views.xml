@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_otk_translation_config_list" model="ir.ui.view">
+        <field name="name">otk.translation.config.list</field>
+        <field name="model">otk.translation.config</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="model_id"/>
+                <field name="has_translatable_fields"/>
+                <field name="translatable_field_ids" widget="many2many_tags"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_otk_translation_config_form" model="ir.ui.view">
+        <field name="name">otk.translation.config.form</field>
+        <field name="model">otk.translation.config</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_translatable_fields"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-list"
+                                invisible="not has_translatable_fields">
+                            <field name="has_translatable_fields" invisible="1"/>
+                            <span>Translatable Fields</span>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <group>
+                        <group>
+                            <field name="model_id" options="{'no_create': True}"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                        <group>
+                            <field name="server_action_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Translatable Fields" invisible="not has_translatable_fields">
+                        <field name="translatable_field_ids" widget="many2many_tags" nolabel="1" colspan="2" readonly="1"/>
+                    </group>
+                    <div class="alert alert-warning" role="alert" invisible="has_translatable_fields">
+                        <strong>Warning:</strong> This model has no translatable fields. Bulk translation will not be useful.
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_otk_translation_config_search" model="ir.ui.view">
+        <field name="name">otk.translation.config.search</field>
+        <field name="model">otk.translation.config</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="model_id"/>
+                <filter name="active" string="Active" domain="[('active', '=', True)]"/>
+                <filter name="inactive" string="Archived" domain="[('active', '=', False)]"/>
+                <filter name="has_fields" string="With Translatable Fields" domain="[('has_translatable_fields', '=', True)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Active" name="group_active" context="{'group_by': 'active'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_otk_translation_config" model="ir.actions.act_window">
+        <field name="name">Translation Configuration</field>
+        <field name="res_model">otk.translation.config</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Configure models for bulk translation
+            </p>
+            <p>
+                Add models here to enable the "Bulk translate" action on their list views.
+                No code changes required - just select a model and it will automatically
+                get the bulk translation feature.
+            </p>
+        </field>
+    </record>
+
+    <!-- Wizard to enable all translatable models at once -->
+    <record id="action_enable_all_translatable_models" model="ir.actions.server">
+        <field name="name">Enable All Translatable Models</field>
+        <field name="model_id" ref="model_otk_translation_config"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_enable_all_translatable_models()</field>
+    </record>
+
+    <menuitem
+        id="otoolkit_translation_config_menu"
+        name="Translation Settings"
+        parent="otoolkit_menu"
+        action="action_otk_translation_config"
+        sequence="120"
+    />
+</odoo>

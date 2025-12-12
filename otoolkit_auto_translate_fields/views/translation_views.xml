@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_otoolkit_translation_action_list" model="ir.ui.view">
+        <field name="name">otk.translation.action.list</field>
+        <field name="model">otk.translation.action</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="id"/>
+                <field name="model_id" />
+                <field name="field_ids" widget="many2many_tags" />
+                <field name="translation_count" />
+                <field name="token_cost" />
+                <field name="status" />
+                <field name="progress" widget="progressbar"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_otoolkit_translation_action_form" model="ir.ui.view">
+        <field name="name">otk.translation.action.form</field>
+        <field name="model">otk.translation.action</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button invisible="status!='error'" name="retry_error_translation" string="Retry translation" type="object" class="btn-primary" />
+                </header>
+                <sheet>
+                    <group>
+                        <field name="model_id" />
+                        <field name="status" />
+                        <field name="base_language_id" />
+                        <field name="target_language_ids" widget="many2many_tags" />
+                        <field name="field_ids" widget="many2many_tags" />
+                        <field name="pending_record_ids" widget="jsonb" />
+                        <field name="processing_record_ids" widget="jsonb" />
+                        <field name="done_record_ids" widget="jsonb" />
+                        <field name="error_record_ids" widget="jsonb" />
+                        <field name="progress" widget="progressbar" />
+                        <field name="translation_ids">
+                            <list create="0" delete="0" >
+                                <field name="record_id" />
+                                <field name="cost" />
+                                <field name="status" />
+                            </list>
+                        </field>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_otoolkit_translation_list" model="ir.ui.view">
+        <field name="name">otk.translation.list</field>
+        <field name="model">otk.translation</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="id"/>
+                <field name="model_id" />
+                <field name="record_id" />
+                <field name="action_id" />
+                <field name="status" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_otoolkit_translation_form" model="ir.ui.view">
+        <field name="name">otk.translation.form</field>
+        <field name="model">otk.translation</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button invisible="status!='success'" name="revert_translation" string="Revert translation" type="object" class="btn-primary" />
+                    <button name="open_record" string="Open record" type="object" />
+                </header>
+                <sheet>
+                    <group>
+                        <field name="model_id" />
+                        <field name="record_id" />
+                        <field name="status" />
+                    </group>
+                    <notebook>
+                        <page string="Translations">
+                            <field name="translations" widget="json_pretty" />
+                        </page>
+                        <page string="Initial value" invisible="status!='success' and status!='revert'">
+                            <field name="initial_values" widget="json_pretty" />
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_otoolkit_translation" model="ir.actions.act_window">
+        <field name="name">Translation actions</field>
+        <field name="res_model">otk.translation</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_otoolkit_translation_action" model="ir.actions.act_window">
+        <field name="name">Translation actions</field>
+        <field name="res_model">otk.translation.action</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+        id="otoolkit_menu"
+        name="Otoolkit"
+        parent="base.menu_custom"
+        sequence="100"
+    />
+
+    <menuitem
+        id="otoolkit_translation_actions_menu"
+        name="Bulk translations"
+        parent="otoolkit_menu"
+        action="action_otoolkit_translation_action"
+        sequence="105"
+    />
+
+    <menuitem
+        id="otoolkit_translation_menu"
+        name="Past translations"
+        parent="otoolkit_menu"
+        action="action_otoolkit_translation"
+        sequence="110"
+    />
+</odoo>
