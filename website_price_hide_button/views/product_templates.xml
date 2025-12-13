@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Hide price and add to cart button, show contact us instead -->
+    <template id="product_hide" inherit_id="website_sale.product">
+        <!-- Add contact us button for public users -->
+        <xpath expr="//div[@id='add_to_cart_wrap']" position="before">
+            <div class="mt-2 mb-3" t-if="request.env.user._is_public()">
+                <div class="alert alert-info mt-3">
+                    <i class="fa fa-info-circle me-2"/>
+                    <span>Please log in to see prices and purchase options.</span>
+                </div>
+                 <a href="/contactus" class="btn btn-primary btn-md">
+                    <i class="fa fa-envelope me-2"/>
+                    <span>Contact Us</span>
+                </a>
+            </div>
+        </xpath>
+        
+        <!-- Hide add to cart button for public users -->
+        <xpath expr="//div[@id='add_to_cart_wrap']" position="attributes">
+            <attribute name="t-if">not request.env.user._is_public()</attribute>
+        </xpath>
+    </template>
+    
+    <!-- Hide product price in price widget -->
+    <template id="product_price_hide" inherit_id="website_sale.product_price">
+        <xpath expr="//div[@itemprop='offers']" position="attributes">
+            <attribute name="t-if">not request.env.user._is_public()</attribute>
+        </xpath>
+    </template>
+    
+    <!-- Hide cart icon in header for public users -->
+    <template id="header_cart_link_hide" inherit_id="website_sale.header_cart_link">
+        <xpath expr="//a[@href='/shop/cart']" position="attributes">
+            <attribute name="t-if">not request.env.user._is_public()</attribute>
+        </xpath>
+    </template>
+    
+    <!-- Hide quantity selector for public users -->
+    <template id="product_quantity_hide" inherit_id="website_sale.product_quantity">
+        <xpath expr="//div[contains(@t-attf-class, 'css_quantity')]" position="attributes">
+            <attribute name="t-if">not request.env.user._is_public()</attribute>
+        </xpath>
+    </template>
+</odoo>
