@@ -12,7 +12,6 @@
     'images': ['static/description/hideprice.png'],
     "icon": "static/description/icon.png",
      'data': [
-        'views/website_templates.xml',  
         'views/shop_templates.xml',     
         'views/product_templates.xml',   
     ],
@@ -22,4 +21,5 @@
     'application': False,
 
 }
+
 
