@@ -19,13 +19,6 @@
         <!-- Add contact us link for public users -->
         <xpath expr="//div[hasclass('o_wsale_product_btn')]" position="inside">
             #03
-            <div class="alert alert-warning" t-if="request.website">
-                Huidige Website ID (DEBUG): 
-                <span t-esc="request.website.id"/>
-            </div>
-            <div class="alert alert-danger" t-if="not request.website">
-                Huidige Website ID (DEBUG): request.website is ONGEDEFINIEERD!
-            </div>
             <div t-if="request.env.user._is_public() and request.website.id == 2" class="mt-2">
                 #04
                 <a href="/contactus" class="btn btn-primary btn-sm w-100">
@@ -56,5 +49,6 @@
     </template>
 
 </odoo>
+
 
 
