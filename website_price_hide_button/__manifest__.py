@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': "Hide Price & Show Contact Us for Public Users",
-    'version': '1.0',
+    'version': '1.0.1',
     'category': 'Website',
     'summary': """Hide product prices and replace buy button with contact us for non-logged users""",
     'description': """This module hides product prices for non-logged users and 
@@ -22,3 +22,4 @@
     'application': False,
 
 }
+
