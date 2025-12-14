@@ -13,6 +13,7 @@ odoo.define('website_hide_button.product_page', function (require) {
          */
         start: function () {
             var self = this;
+            console.log("Website ID:", odoo.session_info.website_id);
             return this._super.apply(this, arguments).then(function () {
                 if (odoo.session_info && odoo.session_info.is_public_user && odoo.session_info.website_id === TARGET_WEBSITE_ID) {
                     self._hideProductPrices();
@@ -103,3 +104,4 @@ odoo.define('website_hide_button.product_page', function (require) {
     return publicWidget.registry.WebsiteHideButton;
 
 });
+
