@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<odoo>
-    <template id="layout_hide_button" inherit_id="website.layout">
-        <xpath expr="//head" position="inside">
-            <script type="text/javascript" src="/website_hide_button/static/src/js/website_hide_button.js"></script>
-        </xpath>
-    </template>
-</odoo>
