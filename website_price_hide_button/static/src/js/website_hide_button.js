@@ -2,6 +2,7 @@ odoo.define('website_hide_button.product_page', function (require) {
     'use strict';
     
     var publicWidget = require('web.public.widget');
+    var TARGET_WEBSITE_ID = 2;
     
     publicWidget.registry.WebsiteHideButton = publicWidget.Widget.extend({
         selector: '.oe_website_sale',
@@ -13,7 +14,7 @@ odoo.define('website_hide_button.product_page', function (require) {
         start: function () {
             var self = this;
             return this._super.apply(this, arguments).then(function () {
-                if (odoo.session_info && odoo.session_info.is_public_user) {
+                if (odoo.session_info && odoo.session_info.is_public_user && odoo.session_info.website_id === TARGET_WEBSITE_ID) {
                     self._hideProductPrices();
                     self._hideAddToCartButtons();
                     self._hideQuantitySelectors();
@@ -100,4 +101,5 @@ odoo.define('website_hide_button.product_page', function (require) {
     });
     
     return publicWidget.registry.WebsiteHideButton;
+
 });
