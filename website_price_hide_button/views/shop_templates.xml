@@ -8,6 +8,12 @@
             <div class="alert alert-info p-1 m-1" style="font-size: 0.7rem; border: 1px solid red;">
                 <strong>Debug Info:</strong><br/>
                 Is Public: <t t-esc="request.env.user._is_public()"/><br/>
+                <div class="product_price mt-1" t-if="request.env.user._is_public()==true">
+                    Is public: Ja
+                </div>
+                <div class="product_price mt-1" t-if="request.env.user._is_public()==false">
+                    Is public: Nee
+                </div>
                 Website ID: <t t-esc="request.website.id"/>
                 Website Name: <t t-esc="request.website.name"/>
             </div>
