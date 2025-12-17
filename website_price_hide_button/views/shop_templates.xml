@@ -11,7 +11,7 @@
                 <div class="product_price mt-1" t-if="request.env.user._is_public()==true">
                     Is public: Ja
                 </div>
-                <div class="product_price mt-1" t-if="request.env.user._is_public()==false">
+                <div class="product_price mt-1" t-if="not request.env.user._is_public()==true>
                     Is public: Nee
                 </div>
                 Website ID: <t t-esc="request.website.id"/>
