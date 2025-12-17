@@ -4,6 +4,7 @@
     <!-- Hide product price in product grid -->
     <template id="products_item" inherit_id="website_sale.products_item">
         <!-- debuggin info-->
+        <!--
         <xpath expr="//div[hasclass('oe_product_image')]" position="after">
             <t t-set="is_public" t-value="request.env.user == request.website.user_id"/>
             <div class="alert alert-info p-1 m-1" style="font-size: 0.7rem; border: 1px solid red;">
@@ -19,8 +20,10 @@
                 Website Name: <t t-esc="request.website.name"/>
             </div>
         </xpath>
+        -->
         <!-- Replace the price div with a conditional version -->
         <xpath expr="//div[hasclass('product_price')]" position="replace">
+            <t t-set="is_public" t-value="request.env.user == request.website.user_id"/>
             <div class="product_price mt-1" t-if="is_public and request.website.id == 2">
                 <div class="o_wsale_products_item_title">
                     <div class="o_wsale_products_item_price d-inline-block">
@@ -45,7 +48,8 @@
     <!-- Hide price filter for public users -->
     <template id="filter_products_price_hide" inherit_id="website_sale.filter_products_price">
         <xpath expr="//div[@id='o_wsale_price_range_option']" position="replace">
-            <div t-if="not request.env.user._is_public() or request.website.id == 1" id="o_wsale_price_range_option" class="mt-3">
+            <t t-set="is_public" t-value="request.env.user == request.website.user_id"/>
+            <div t-if="not is_public or request.website.id == 1" id="o_wsale_price_range_option" class="mt-3">
                 <div class="d-flex align-items-center justify-content-between text-nowrap">
                     <span class="flex-grow-1 me-1">Min value</span>
                     <span class="flex-grow-1 ms-1 text-end">Max value</span>
@@ -58,7 +62,6 @@
             </div>
         </xpath>
     </template>
-
 </odoo>
 
 
