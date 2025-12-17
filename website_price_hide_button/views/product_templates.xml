@@ -26,7 +26,6 @@
     <!-- Hide product price in price widget -->
     <template id="product_price_hide" inherit_id="website_sale.product_price">
         <xpath expr="//div[@itemprop='offers']" position="attributes">
-            <t t-set="is_public" t-value="request.env.user == request.website.user_id"/>
             <attribute name="t-if">is_public and request.website.id == 2</attribute>
         </xpath>
     </template>
@@ -34,7 +33,6 @@
     <!-- Hide cart icon in header for public users -->
     <template id="header_cart_link_hide" inherit_id="website_sale.header_cart_link">
         <xpath expr="//a[@href='/shop/cart']" position="attributes">
-            <t t-set="is_public" t-value="request.env.user == request.website.user_id"/>
             <attribute name="t-if">not is_public and request.website.id == 2</attribute>
         </xpath>
     </template>
@@ -42,7 +40,6 @@
     <!-- Hide quantity selector for public users -->
     <template id="product_quantity_hide" inherit_id="website_sale.product_quantity">
         <xpath expr="//div[contains(@t-attf-class, 'css_quantity')]" position="attributes">
-            <t t-set="is_public" t-value="request.env.user == request.website.user_id"/>
             <attribute name="t-if">not is_public and request.website.id == 2</attribute>
         </xpath>
     </template>
