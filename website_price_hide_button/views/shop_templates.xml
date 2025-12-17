@@ -24,7 +24,7 @@
         <!-- Replace the price div with a conditional version -->
         <xpath expr="//div[hasclass('product_price')]" position="replace">
             <t t-set="is_public" t-value="request.env.user == request.website.user_id"/>
-            <div class="product_price mt-1" t-if="is_public and request.website.id == 2">
+            <div class="product_price mt-1" t-if="not is_public or request.website.id == 1">
                 <div class="o_wsale_products_item_title">
                     <div class="o_wsale_products_item_price d-inline-block">
                         <!-- Use list_price for both display and comparison -->
