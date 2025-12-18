@@ -6,10 +6,12 @@
         <xpath expr="." position="inside">
             <t t-set="show_price"
             t-value="(request.env.user == request.website.user_id) or request.website.id == 1"/>
+        </xpath>
+        <xpath expr="//div[hasclass('oe_product_image')]" position="before">
             Show price: <t t-esc="str(show_price)"/>
         </xpath>
         <!-- debuggin info-->
-        <!--
+        <!-- 
         <xpath expr="//div[hasclass('oe_product_image')]" position="after">
             <t t-set="is_public" t-value="request.env.user == request.website.user_id"/>
             <div class="alert alert-info p-1 m-1" style="font-size: 0.7rem; border: 1px solid red;">
