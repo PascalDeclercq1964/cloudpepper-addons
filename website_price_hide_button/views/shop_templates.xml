@@ -6,6 +6,7 @@
         <xpath expr="." position="inside">
             <t t-set="show_price"
             t-value="(request.env.user == request.website.user_id) or request.website.id == 1"/>
+            Show price: <t t-esc="str(show_price)"/>
         </xpath>
         <!-- debuggin info-->
         <!--
