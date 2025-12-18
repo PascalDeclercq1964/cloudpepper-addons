@@ -21,22 +21,21 @@
             </div>
         </xpath>
         -->
-        <!-- Replace the price div with a conditional version -->
-        <xpath expr="//div[hasclass('product_price')]" position="replace">
-            <t t-set="is_public" t-value="request.env.user == request.website.user_id"/>
-            <div class="product_price mt-1" t-if="not is_public or request.website.id == 1">
-                <div class="o_wsale_products_item_title">
-                    <div class="o_wsale_products_item_price d-inline-block">
-                        <!-- Use list_price for both display and comparison -->
-                        <span t-field="product.list_price" t-options='{"widget": "monetary", "display_currency": website.currency_id}'/>
-                    </div>
-                </div>
-            </div>
+        <xpath expr="//div[hasclass('product_price')]" position="before">
+            <t t-set="show_price"
+                t-value="not (request.env.user == request.website.user_id) or request.website.id == 1"/>
         </xpath>
+
+        <!-- Replace the price div with a conditional version -->
+
+        <xpath expr="//div[hasclass('product_price')]" position="attributes">
+            <attribute name="t-if">show_price</attribute>
+        </xpath>
+
         
         <!-- Add contact us link for public users -->
         <xpath expr="//div[hasclass('o_wsale_product_btn')]" position="inside">
-            <div t-if="is_public and request.website.id == 2" class="mt-2">
+            <div t-if="not show_price" class="mt-2">
                 <a href="/contactus" class="btn btn-primary btn-sm w-100">
                     <i class="fa fa-envelope me-1"/>
                     <span>Contact Us</span>
