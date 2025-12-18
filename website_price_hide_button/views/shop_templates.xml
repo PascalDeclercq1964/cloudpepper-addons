@@ -3,6 +3,8 @@
 
     <!-- Hide product price in product grid -->
     <template id="products_item" inherit_id="website_sale.products_item">
+        <t t-set="show_price"
+            t-value="not (request.env.user == request.website.user_id) or request.website.id == 1"/>
         <!-- debuggin info-->
         <!--
         <xpath expr="//div[hasclass('oe_product_image')]" position="after">
@@ -21,13 +23,7 @@
             </div>
         </xpath>
         -->
-        <xpath expr="//div[hasclass('product_price')]" position="before">
-            <t t-set="show_price"
-                t-value="not (request.env.user == request.website.user_id) or request.website.id == 1"/>
-        </xpath>
-
         <!-- Replace the price div with a conditional version -->
-
         <xpath expr="//div[hasclass('product_price')]" position="attributes">
             <attribute name="t-if">show_price</attribute>
         </xpath>
