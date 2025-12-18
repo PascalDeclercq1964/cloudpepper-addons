@@ -5,7 +5,7 @@
     <template id="products_item" inherit_id="website_sale.products_item">
         <xpath expr="." position="inside">
             <t t-set="show_price"
-            t-value="not (request.env.user == request.website.user_id) or request.website.id == 1"/>
+            t-value="(request.env.user == request.website.user_id) or request.website.id == 1"/>
         </xpath>
         <!-- debuggin info-->
         <!--
