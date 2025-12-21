@@ -3,7 +3,7 @@
     <!-- Hide price and add to cart button, show contact us instead -->
     <template id="product_hide" inherit_id="website_sale.product">
         <xpath expr="//input[@name='add_qty']" position="before">
-        <t t-set="b2b_min_qty"
+        <t t-set="b2b_min_qty2"
            t-value="
                (
                  request.website.id == 2
@@ -13,6 +13,8 @@
                  )[1].min_quantity
                ) or 1
            "/>
+        <t t-set="b2b_min_qty"
+           t-value="6"/>
         </xpath>
         <xpath expr="//input[@name='add_qty']" position="attributes">
             <attribute name="t-att-min">b2b_min_qty</attribute>
