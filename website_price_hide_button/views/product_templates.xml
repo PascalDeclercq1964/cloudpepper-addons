@@ -26,27 +26,27 @@
     
     <!-- Hide product price in price widget -->
     <template id="product_price_hide" inherit_id="website_sale.product_price">
+        <xpath expr="//div[@itemprop='offers']" position="attributes">
             <t t-set="show_price" t-value="request.website.id == 1 or
                 (request.website.id == 2 and request.env.user != request.website.user_id)"/>
-        <xpath expr="//div[@itemprop='offers']" position="attributes">
             <attribute name="t-if">show_price</attribute>
         </xpath>
     </template>
     
     <!-- Hide cart icon in header for public users -->
     <template id="header_cart_link_hide" inherit_id="website_sale.header_cart_link">
+        <xpath expr="//a[@href='/shop/cart']" position="attributes">
             <t t-set="show_price" t-value="request.website.id == 1 or
                 (request.website.id == 2 and request.env.user != request.website.user_id)"/>
-        <xpath expr="//a[@href='/shop/cart']" position="attributes">
             <attribute name="t-if">show_price</attribute>
         </xpath>
     </template>
     
     <!-- Hide quantity selector for public users -->
     <template id="product_quantity_hide" inherit_id="website_sale.product_quantity">
+        <xpath expr="//div[contains(@t-attf-class, 'css_quantity')]" position="attributes">
             <t t-set="show_price" t-value="request.website.id == 1 or
                 (request.website.id == 2 and request.env.user != request.website.user_id)"/>
-        <xpath expr="//div[contains(@t-attf-class, 'css_quantity')]" position="attributes">
             <attribute name="t-if">show_price</attribute>
         </xpath>
     </template>
