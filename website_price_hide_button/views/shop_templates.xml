@@ -5,7 +5,7 @@
     <template id="products_item" inherit_id="website_sale.products_item">
         <xpath expr="." position="inside">
             <t t-set="show_price"
-                t-value="request.website.id == 1"/>
+                t-value="ja"/>
         </xpath>
         <xpath expr="//div[hasclass('oe_product_image')]" position="before">
             Show price: <t t-esc="show_price"/>
