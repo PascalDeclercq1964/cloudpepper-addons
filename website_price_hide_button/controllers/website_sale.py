@@ -25,8 +25,11 @@ class SaleOrderLine(models.Model):
     def _get_b2b_min_qty(self):
         self.ensure_one()
 
+        product = self.product_id          # product.product ✔
         pricelist = self.order_id.pricelist_id
-        product = self.product_id
+
+        if not product or not pricelist:
+            return 1
 
         price, rule = product._get_pricelist_price_rule(
             pricelist,
