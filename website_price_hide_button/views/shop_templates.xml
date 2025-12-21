@@ -3,9 +3,8 @@
 
     <!-- Hide product price in product grid -->
     <template id="products_item" inherit_id="website_sale.products_item">
-        <xpath expr="." position="inside">
-            <t t-set="show_price"
-                t-value="'ja'"/>
+        <xpath expr="//*[1]" position="before">
+            <t t-set="show_price" t-value="True"/>
         </xpath>
         <xpath expr="//div[hasclass('oe_product_image')]" position="before">
             Show price #1: <t t-esc="show_price"/>
