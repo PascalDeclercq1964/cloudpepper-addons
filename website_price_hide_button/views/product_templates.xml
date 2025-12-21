@@ -3,16 +3,6 @@
     <!-- Hide price and add to cart button, show contact us instead -->
     <template id="product_hide" inherit_id="website_sale.product">
         <xpath expr="//input[@name='add_qty']" position="before">
-        <t t-set="b2b_min_qty2"
-           t-value="
-               (
-                 request.website.id == 2
-                 and product._get_pricelist_price_rule(
-                       request.website.pricelist_id, 
-                       1
-                 )[1].min_quantity
-               ) or 1
-           "/>
         <t t-set="b2b_min_qty"
            t-value="6"/>
         </xpath>
