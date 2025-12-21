@@ -2,6 +2,29 @@
 <odoo>
     <!-- Hide price and add to cart button, show contact us instead -->
     <template id="product_hide" inherit_id="website_sale.product">
+        <xpath expr="//input[@name='add_qty']" position="before">
+        <t t-set="b2b_min_qty"
+           t-value="
+               (
+                 request.website.id == 2
+                 and product._get_pricelist_price_rule(
+                       request.website.pricelist_id, 
+                       1
+                 )[1].min_quantity
+               ) or 1
+           "/>
+        </xpath>
+        <xpath expr="//input[@name='add_qty']" position="attributes">
+            <attribute name="t-att-min">b2b_min_qty</attribute>
+            <attribute name="t-att-step">b2b_min_qty</attribute>
+            <attribute name="t-att-value">b2b_min_qty</attribute>
+        </xpath>
+        <xpath expr="//input[@name='add_qty']" position="after">
+            <p t-if="b2b_min_qty &gt; 1" class="text-muted small mt-1">
+                Bestellen per <strong><t t-esc="b2b_min_qty"/></strong> stuks
+            </p>
+        </xpath>
+
         <!-- Add contact us button for public users -->
         <xpath expr="//div[@id='add_to_cart_wrap']" position="before">
             <t t-set="show_price" t-value="request.website.id == 1 or
