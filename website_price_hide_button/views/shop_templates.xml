@@ -8,7 +8,7 @@
                 t-value="ja"/>
         </xpath>
         <xpath expr="//div[hasclass('oe_product_image')]" position="before">
-            Show price: <t t-esc="show_price"/>
+            Show price #1: <t t-esc="show_price"/>
         </xpath>
         <!-- debuggin info-->
         <!-- 
