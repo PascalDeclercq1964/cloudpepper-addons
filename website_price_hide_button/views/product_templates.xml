@@ -70,7 +70,7 @@
         </xpath>
     </template>
 
-    <template id="assets_frontend" inherit_id="website.assets_frontend">
+    <template id="assets_frontend" inherit_id="web.assets_frontend">
         <xpath expr="." position="inside">
             <script src="/website_price_hide_button/static/src/js/quantity_step.js"/>
         </xpath>
