@@ -69,5 +69,10 @@
                 (request.website.id == 2 and request.env.user != request.website.user_id)</attribute>
         </xpath>
     </template>
-
+    
+    <template id="assets_frontend" inherit_id="website.assets_frontend">
+        <xpath expr="." position="inside">
+            <script src="/my_module/static/src/js/quantity_step.js"/>
+        </xpath>
+    </template>
 </odoo>
