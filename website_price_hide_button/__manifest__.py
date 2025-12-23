@@ -13,6 +13,7 @@
         'web.assets_frontend': [
             'website_price_hide_button/static/src/js/quantity_step.js',
         ],
+    },
     'images': ['static/description/hideprice.png'],
     "icon": "static/description/icon.png",
      'data': [
