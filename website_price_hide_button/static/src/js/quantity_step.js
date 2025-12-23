@@ -1,34 +1,41 @@
-odoo.define('my_module.quantity_step', function (require) {
-    'use strict';
+/** @odoo-module **/
 
-    const publicWidget = require('web.public.widget');
+import publicWidget from "@web/legacy/js/public/public_widget";
 
-    publicWidget.registry.WebsiteSale.include({
+publicWidget.registry.WebsiteSale.include({
 
-        _onClickAddQuantity(ev) {
-            ev.preventDefault();
-            const $input = $(ev.currentTarget)
-                .closest('.css_quantity')
-                .find('input');
+    _onClickAddQuantity(ev) {
+        ev.preventDefault();
 
-            const step = parseInt($input.data('step') || $input.attr('step') || 1);
-            let value = parseInt($input.val(), 10) || 0;
+        const input = ev.currentTarget
+            .closest('.css_quantity')
+            .querySelector('input');
 
-            $input.val(value + step).change();
-        },
+        const step = parseInt(
+            input.dataset.step || input.getAttribute('step') || 1
+        );
 
-        _onClickRemoveQuantity(ev) {
-            ev.preventDefault();
-            const $input = $(ev.currentTarget)
-                .closest('.css_quantity')
-                .find('input');
+        let value = parseInt(input.value || step);
+        input.value = value + step;
+        input.dispatchEvent(new Event('change'));
+    },
 
-            const step = parseInt($input.data('step') || $input.attr('step') || 1);
-            let value = parseInt($input.val(), 10) || 0;
+    _onClickRemoveQuantity(ev) {
+        ev.preventDefault();
 
-            value = Math.max(step, value - step);
-            $input.val(value).change();
-        },
+        const input = ev.currentTarget
+            .closest('.css_quantity')
+            .querySelector('input');
 
-    });
+        const step = parseInt(
+            input.dataset.step || input.getAttribute('step') || 1
+        );
+
+        let value = parseInt(input.value || step);
+        value = Math.max(step, value - step);
+
+        input.value = value;
+        input.dispatchEvent(new Event('change'));
+    },
+
 });
