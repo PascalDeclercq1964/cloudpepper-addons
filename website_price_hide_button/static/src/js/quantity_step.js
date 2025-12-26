@@ -1,29 +1,34 @@
-
 /** @odoo-module **/
-console.log(">>> Quantity Step JS geladen!");
-import { publicWidget } from "@web/public/public_widget";
 
-// We gebruiken de klassieke registry voor v18 frontend widgets 
-// om conflicten met de nieuwe HTML-editor te voorkomen.
-publicWidget.registry.WebsiteSaleQuantityStep = publicWidget.registry.WebsiteSale.extend({
-    events: Object.assign({}, publicWidget.registry.WebsiteSale.prototype.events || {}, {
-        'click .js_add_cart_json': '_onQuantityClickCustom',
-    }),
+import publicWidget from "@web/public/public_widget";
 
-    _onQuantityClickCustom(ev) {
-        ev.preventDefault();
-        const $input = $(ev.currentTarget).closest('.css_quantity').find('input');
-        const step = parseFloat($input.attr('step') || $input.data('step') || 1);
-        const currentValue = parseFloat($input.val() || step);
-        const isAdd = $(ev.currentTarget).has('.fa-plus').length > 0;
+publicWidget.registry.QuantityStepCustom = publicWidget.Widget.extend({
+    selector: '#wrap', // Gebruik de hoofd-container van de pagina
 
-        let newValue;
-        if (isAdd) {
-            newValue = currentValue + step;
-        } else {
-            newValue = Math.max(step, currentValue - step);
+    init() {
+        this._super(...arguments);
+        console.log(">>> Widget geïnitialiseerd op de pagina!");
+    },
+    events: {
+        'click .css_quantity .js_add_cart_json': '_onUpdateStepQuantity',
+    },
+
+    _onUpdateStepQuantity(ev) {
+        console.log(">>> Klik gedetecteerd!");
+        const $link = $(ev.currentTarget);
+        const $input = $link.closest('.css_quantity').find('input');
+        const step = parseFloat($input.attr('step') || 1);
+
+        if (step > 1) {
+            ev.preventDefault();
+            ev.stopImmediatePropagation(); // DIT IS CRUCIAAL: het stopt de standaard Odoo +1 logica
+
+            const currentValue = parseFloat($input.val() || step);
+            const isAdd = $link.find('.fa-plus').length > 0;
+            const newValue = isAdd ? currentValue + step : Math.max(step, currentValue - step);
+
+            $input.val(newValue).trigger('change');
+            console.log("Nieuwe waarde gezet op:", newValue);
         }
-
-        $input.val(newValue).trigger('change');
     },
 });
