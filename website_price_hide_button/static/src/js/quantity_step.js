@@ -1,41 +1,31 @@
 /** @odoo-module **/
 
-import publicWidget from "@web/legacy/js/public/public_widget";
+import { WebsiteSale } from "@website_sale/js/website_sale";
+import { patch } from "@web/core/utils/patch";
 
-publicWidget.registry.WebsiteSale.include({
-
+patch(WebsiteSale.prototype, {
+    /**
+     * Overschrijf de plus-knop logica
+     */
     _onClickAddQuantity(ev) {
         ev.preventDefault();
-
-        const input = ev.currentTarget
-            .closest('.css_quantity')
-            .querySelector('input');
-
-        const step = parseInt(
-            input.dataset.step || input.getAttribute('step') || 1
-        );
-
-        let value = parseInt(input.value || step);
-        input.value = value + step;
-        input.dispatchEvent(new Event('change'));
+        const $input = $(ev.currentTarget).closest('.css_quantity').find('input');
+        const step = parseInt($input.attr('step') || $input.data('step') || 1);
+        const currentValue = parseInt($input.val() || step);
+        
+        $input.val(currentValue + step).trigger('change');
     },
 
+    /**
+     * Overschrijf de min-knop logica
+     */
     _onClickRemoveQuantity(ev) {
         ev.preventDefault();
-
-        const input = ev.currentTarget
-            .closest('.css_quantity')
-            .querySelector('input');
-
-        const step = parseInt(
-            input.dataset.step || input.getAttribute('step') || 1
-        );
-
-        let value = parseInt(input.value || step);
-        value = Math.max(step, value - step);
-
-        input.value = value;
-        input.dispatchEvent(new Event('change'));
+        const $input = $(ev.currentTarget).closest('.css_quantity').find('input');
+        const step = parseInt($input.attr('step') || $input.data('step') || 1);
+        const currentValue = parseInt($input.val() || step);
+        
+        const newValue = Math.max(step, currentValue - step);
+        $input.val(newValue).trigger('change');
     },
-
 });

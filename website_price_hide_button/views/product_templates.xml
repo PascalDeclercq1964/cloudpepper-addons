@@ -9,7 +9,8 @@
         <xpath expr="//input[@name='add_qty']" position="attributes">
             <attribute name="t-att-data-min">b2b_min_qty</attribute>
             <attribute name="t-att-data-step">b2b_min_qty</attribute>
-            <attribute name="t-att-value">b2b_min_qty</attribute>
+            <attribute name="t-att-step">b2b_min_qty</attribute>
+           <attribute name="t-att-value">b2b_min_qty</attribute>
         </xpath>
         <xpath expr="//input[@name='add_qty']" position="after">
             <p t-if="b2b_min_qty &gt; 1" class="text-muted small mt-1">
