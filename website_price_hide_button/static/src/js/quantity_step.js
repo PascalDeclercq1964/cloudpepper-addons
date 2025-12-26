@@ -1,6 +1,6 @@
 
 /** @odoo-module **/
-
+console.log(">>> Quantity Step JS geladen!");
 import { publicWidget } from "@web/public/public_widget";
 
 // We gebruiken de klassieke registry voor v18 frontend widgets 
