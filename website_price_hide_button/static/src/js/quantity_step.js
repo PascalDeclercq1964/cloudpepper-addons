@@ -3,11 +3,11 @@
 import publicWidget from "@web/public/public_widget";
 
 publicWidget.registry.QuantityStepCustom = publicWidget.Widget.extend({
-    selector: '.oe_website_sale', // Gebruik de hoofd-container van de pagina
+    selector: 'body', // Gebruik de hoofd-container van de pagina
 
     init() {
-        this._super(...arguments);
         console.log(">>> Widget geïnitialiseerd op de pagina!");
+        this._super(...arguments);
     },
     events: {
         'click .css_quantity .js_add_cart_json': '_onUpdateStepQuantity',
