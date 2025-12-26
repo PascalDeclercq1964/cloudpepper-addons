@@ -3,7 +3,7 @@
 import publicWidget from "@web/public/public_widget";
 
 publicWidget.registry.QuantityStepCustom = publicWidget.Widget.extend({
-    selector: '#wrap', // Gebruik de hoofd-container van de pagina
+    selector: '.oe_website_sale', // Gebruik de hoofd-container van de pagina
 
     init() {
         this._super(...arguments);
