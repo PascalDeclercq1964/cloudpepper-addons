@@ -11,10 +11,9 @@
     'depends': ['website_sale'],
     'assets': {
         'web.assets_frontend': [
-            # We zeggen hier: laad mijn JS pas NADAT website_sale geladen is
-            ('after', 'website_sale/static/src/js/website_sale.js', 'website_price_hide_button/static/src/js/quantity_step.js'),
+            'website_price_hide_button/static/src/js/quantity_step.js',
         ],
-    },
+    },    
     'images': ['static/description/hideprice.png'],
     "icon": "static/description/icon.png",
      'data': [
