@@ -1,34 +1,36 @@
 /** @odoo-module **/
 
-import publicWidget from "@web/public/public_widget";
+import { publicWidget } from "@web/public/public_widget";
 
-publicWidget.registry.QuantityStepCustom = publicWidget.Widget.extend({
-    selector: 'body', // Gebruik de hoofd-container van de pagina
-
-    init() {
-        console.log(">>> Widget geïnitialiseerd op de pagina!");
-        this._super(...arguments);
-    },
-    events: {
-        'click .css_quantity .js_add_cart_json': '_onUpdateStepQuantity',
-    },
-
-    _onUpdateStepQuantity(ev) {
-        console.log(">>> Klik gedetecteerd!");
-        const $link = $(ev.currentTarget);
-        const $input = $link.closest('.css_quantity').find('input');
+// We breiden de bestaande WebsiteSale uit in plaats van een nieuwe te maken
+publicWidget.registry.WebsiteSale.include({
+    
+    _onClickAddQuantity(ev) {
+        const $input = $(ev.currentTarget).closest('.css_quantity').find('input');
         const step = parseFloat($input.attr('step') || 1);
-
+        
         if (step > 1) {
             ev.preventDefault();
-            ev.stopImmediatePropagation(); // DIT IS CRUCIAAL: het stopt de standaard Odoo +1 logica
-
-            const currentValue = parseFloat($input.val() || step);
-            const isAdd = $link.find('.fa-plus').length > 0;
-            const newValue = isAdd ? currentValue + step : Math.max(step, currentValue - step);
-
+            // We berekenen het handmatig
+            const newValue = parseFloat($input.val()) + step;
             $input.val(newValue).trigger('change');
-            console.log("Nieuwe waarde gezet op:", newValue);
+            console.log("Custom stap toegevoegd:", step);
+        } else {
+            this._super(...arguments); // Gebruik standaard Odoo gedrag (1)
+        }
+    },
+
+    _onClickRemoveQuantity(ev) {
+        const $input = $(ev.currentTarget).closest('.css_quantity').find('input');
+        const step = parseFloat($input.attr('step') || 1);
+        
+        if (step > 1) {
+            ev.preventDefault();
+            const newValue = Math.max(step, parseFloat($input.val()) - step);
+            $input.val(newValue).trigger('change');
+            console.log("Custom stap verwijderd:", step);
+        } else {
+            this._super(...arguments);
         }
     },
 });
