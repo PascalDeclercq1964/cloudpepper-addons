@@ -1,34 +1,39 @@
 /** @odoo-module **/
 
-import { publicWidget } from "@web/public/public_widget";
+import { WebsiteSale } from "@website_sale/js/website_sale";
+import { patch } from "@web/core/utils/patch";
 
-// We breiden de bestaande WebsiteSale uit in plaats van een nieuwe te maken
-publicWidget.registry.WebsiteSale.include({
-    
+console.log(">>> Patching WebsiteSale voor custom steps...");
+
+patch(WebsiteSale.prototype, {
+    /**
+     * @override
+     */
     _onClickAddQuantity(ev) {
         const $input = $(ev.currentTarget).closest('.css_quantity').find('input');
         const step = parseFloat($input.attr('step') || 1);
         
         if (step > 1) {
-            ev.preventDefault();
-            // We berekenen het handmatig
-            const newValue = parseFloat($input.val()) + step;
+            const newValue = parseFloat($input.val() || 0) + step;
             $input.val(newValue).trigger('change');
-            console.log("Custom stap toegevoegd:", step);
+            console.log("Stap aangepast (+):", step);
         } else {
-            this._super(...arguments); // Gebruik standaard Odoo gedrag (1)
+            this._super(...arguments);
         }
     },
 
+    /**
+     * @override
+     */
     _onClickRemoveQuantity(ev) {
         const $input = $(ev.currentTarget).closest('.css_quantity').find('input');
         const step = parseFloat($input.attr('step') || 1);
         
         if (step > 1) {
-            ev.preventDefault();
-            const newValue = Math.max(step, parseFloat($input.val()) - step);
+            const currentValue = parseFloat($input.val() || 0);
+            const newValue = Math.max(step, currentValue - step);
             $input.val(newValue).trigger('change');
-            console.log("Custom stap verwijderd:", step);
+            console.log("Stap aangepast (-):", step);
         } else {
             this._super(...arguments);
         }
