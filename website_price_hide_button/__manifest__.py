@@ -8,7 +8,7 @@
     replaces the buy button with a contact us button.""",
     'author': 'Akshar Group Technologies',
     'website': 'https://www.akshargrouptechnologies.com/',
-    'depends': ['website_sale'],
+    'depends': ['website_sale', 'web', 'website'],
     'assets': {
         'web.assets_frontend': [
             'website_price_hide_button/static/src/js/quantity_step.js',
