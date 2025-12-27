@@ -1,35 +1,30 @@
 /** @odoo-module **/
+import { patch } from "@web/core/utils/patch";
+import publicWidget from "@web/legacy/js/public/public_widget";
+import "@website_sale/js/website_sale"; // Ensure the original is loaded
 
-import { publicWidget } from "@web/public/public_widget";
-
-console.log(">>> Custom Quantity Logic geladen");
-
-publicWidget.registry.QuantityStepOverride = publicWidget.Widget.extend({
-    selector: '#wrapwrap', // We pakken de hoogste container van de website
-    events: {
-        'click .js_add_cart_json': '_onQuantityClick',
-    },
-
-    _onQuantityClick: function (ev) {
+patch(publicWidget.registry.WebsiteSale.prototype, {
+    /**
+     * @override
+     */
+    _onClickAddCartJSON: function (ev) {
+        ev.preventDefault();
         const $link = $(ev.currentTarget);
-        const $input = $link.closest('.css_quantity').find('input');
-        const step = parseFloat($input.attr('step') || 1);
+        const $input = $link.closest('.input-group').find("input");
+        const customStep = 5; // Define your custom step here
 
-        // Alleen onze logica uitvoeren als er een custom step is ingesteld
-        if (step > 1) {
-            console.log(">>> Custom step gedetecteerd:", step);
-            
-            // DIT IS DE KEY: we stoppen de originele Odoo-handler van de WebsiteSale widget
-            ev.stopImmediatePropagation();
-            ev.preventDefault();
-
-            const currentValue = parseFloat($input.val() || 0);
-            const isAdd = $link.find('.fa-plus').length > 0;
-            
-            let newValue = isAdd ? currentValue + step : currentValue - step;
-            newValue = Math.max(step, newValue); // Nooit lager dan de stapgrootte
-
-            $input.val(newValue).trigger('change');
+        let quantity = parseFloat($input.val() || 0);
+        if ($link.has(".fa-minus").length) {
+            quantity -= customStep;
+        } else {
+            quantity += customStep;
         }
+        
+        // Apply constraints (min/max)
+        const min = parseFloat($input.data("min") || 1);
+        const max = parseFloat($input.data("max") || Infinity);
+        const finalQty = Math.max(min, Math.min(max, quantity));
+
+        $input.val(finalQty).trigger('change');
     },
 });
