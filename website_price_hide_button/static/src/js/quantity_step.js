@@ -1,41 +1,35 @@
 /** @odoo-module **/
 
-import { WebsiteSale } from "@website_sale/js/website_sale";
-import { patch } from "@web/core/utils/patch";
+import { publicWidget } from "@web/public/public_widget";
 
-console.log(">>> Patching WebsiteSale voor custom steps...");
+console.log(">>> Custom Quantity Logic geladen");
 
-patch(WebsiteSale.prototype, {
-    /**
-     * @override
-     */
-    _onClickAddQuantity(ev) {
-        const $input = $(ev.currentTarget).closest('.css_quantity').find('input');
-        const step = parseFloat($input.attr('step') || 1);
-        
-        if (step > 1) {
-            const newValue = parseFloat($input.val() || 0) + step;
-            $input.val(newValue).trigger('change');
-            console.log("Stap aangepast (+):", step);
-        } else {
-            this._super(...arguments);
-        }
+publicWidget.registry.QuantityStepOverride = publicWidget.Widget.extend({
+    selector: '#wrapwrap', // We pakken de hoogste container van de website
+    events: {
+        'click .js_add_cart_json': '_onQuantityClick',
     },
 
-    /**
-     * @override
-     */
-    _onClickRemoveQuantity(ev) {
-        const $input = $(ev.currentTarget).closest('.css_quantity').find('input');
+    _onQuantityClick: function (ev) {
+        const $link = $(ev.currentTarget);
+        const $input = $link.closest('.css_quantity').find('input');
         const step = parseFloat($input.attr('step') || 1);
-        
+
+        // Alleen onze logica uitvoeren als er een custom step is ingesteld
         if (step > 1) {
+            console.log(">>> Custom step gedetecteerd:", step);
+            
+            // DIT IS DE KEY: we stoppen de originele Odoo-handler van de WebsiteSale widget
+            ev.stopImmediatePropagation();
+            ev.preventDefault();
+
             const currentValue = parseFloat($input.val() || 0);
-            const newValue = Math.max(step, currentValue - step);
+            const isAdd = $link.find('.fa-plus').length > 0;
+            
+            let newValue = isAdd ? currentValue + step : currentValue - step;
+            newValue = Math.max(step, newValue); // Nooit lager dan de stapgrootte
+
             $input.val(newValue).trigger('change');
-            console.log("Stap aangepast (-):", step);
-        } else {
-            this._super(...arguments);
         }
     },
 });
