@@ -86,7 +86,7 @@ class WkExcelController(http.Controller):
         for field in template.field_ids:
             key = field.field_id.name
             
-            # --- AANPASSING START ---
+            # --- AANPASSING START: zorgt in de export data dat de echte id komt en niet de display-name() of zoiets zoals het was in de aangekochte module ---
             
             # 1. Is het veld een Many2one relatie? (bv. partner_id)
             # Gebruik dan /.id (met een punt!) om de Database ID te krijgen i.p.v. de XML ID.
