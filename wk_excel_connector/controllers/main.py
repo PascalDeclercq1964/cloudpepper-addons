@@ -84,18 +84,16 @@ class WkExcelController(http.Controller):
     def get_field_labels(self, template):
         field_keys, labels = [], []
         for field in template.field_ids:
-            # begin aanpassing
             key = field.field_id.name
             # AANPASSING: Als het veld een Many2one relatie is, vraag dan specifiek de ID op
             if field.field_id.ttype == 'many2one':
                 key += '/id'
-            #einde aanpassing    
             
             field_keys.insert(field.sequence, key)
             labels.insert(field.sequence, field.name)
 
-        return field_keys, labels
-    
+        return field_keys, labels    
+        
     def get_csv_data(self, data, labels):
       
         file = io.BytesIO()
