@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2015-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+<!-- See LICENSE file for full copyright and licensing details. -->
+<!-- "License URL : <https://store.webkul.com/license.html/>" -->
+
+<odoo>
+    <record id="excel_template_view_form" model="ir.ui.view">
+        <field name="name">excel.template.view.form</field>
+        <field name="model">excel.template</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Excel Template">
+                <header>
+                    <button name="action_download_odc"
+                        string="Download ODC File"
+                        type="object"
+                        icon="fa-download"
+                        class="btn-outline-primary"
+                    />
+                    <button name="generate_access_token"
+                        type="object"
+                        string="Generate New Url Token"
+                        class="btn-outline-primary"
+                        icon="fa-refresh"
+                        confirm="This will generate a new access token and update the web URL. You need to update the new web URL wherever you used it."
+                        groups="wk_excel_connector.group_excel_connector_manager" />
+                    <button name = 'set_draft_state' type="object" class="oe_highlight" string = "SET DRAFT" invisible ="state == 'draft'" groups="wk_excel_connector.group_excel_connector_manager" />
+                    <button name = 'set_active_state' type="object" class="oe_highlight" string = "SET ACTIVE" invisible = "state == 'active'" groups="wk_excel_connector.group_excel_connector_manager" />
+                    <button name = 'set_inactive_state' type="object" class="oe_highlight" string = "SET INACTIVE" invisible = "state == 'inactive'" groups="wk_excel_connector.group_excel_connector_manager" />
+                    <field name="state" widget="statusbar" readonly = "True"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" />
+                            <field name="model_id" />
+                        </group>
+                        <group>
+                            <field name="lang"/>
+                            <field name="company_id" options="{'no_create' : True}"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="user_id"/>
+                        </group>
+                        <div invisible = "state != 'active'">
+                            <div class="text-muted">
+                                Use this url in excel to connect to this template
+                            </div>
+                            <div>
+                                <code><field name="web_url" readonly="1"/></code>
+                            </div>
+                        </div> 
+                    </group>
+                    <notebook>
+                        <page name="fields" string="Fields">
+                            <field name="field_ids">
+                                <form>
+                                    <sheet>
+                                        <group>
+                                            <field name="field_id"/>
+                                            <field name="name"/>
+                                            <field name="model"/>
+                                        </group>
+                                    </sheet>
+                                </form>
+                                <list>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="field_id"/>
+                                    <field name="name"/>
+                                    <field name="model"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page name="domain" string="Domain">
+                            <group>
+                                <field name="model_name" invisible="1"/>
+                                <field name="domain" widget="domain" options="{'model': 'model_name'}"/>
+                                <field name="sort_keys"/>
+                                <field name="sort_reverse"/>
+                            </group>
+                        </page>
+                        <page name="access_history" string="Access History">
+                            <field name="access_history_ids">
+                                <list no_open="1">
+                                    <field name="ip"/>
+                                    <field name="create_date"/>
+                                    <field name="last_use_date"/>
+                                    <field name="frequency"/>
+                                    <field name="no_of_use"/>
+                                </list>
+                            </field>
+                            <button name="flush_access_history"
+                                    type="object"
+                                    string="Flush History"
+                                    class="btn-primary"
+                                    icon="fa-trash"
+                                    confirm="This will delete all the access history records for this template."
+                                    groups = "wk_excel_connector.group_excel_flush_history,
+                                              wk_excel_connector.group_excel_connector_manager"
+                            />
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="excel_template_view_tree" model="ir.ui.view">
+        <field name="name">excel.template.view.tree</field>
+        <field name="model">excel.template</field>
+        <field name="arch" type="xml">
+            <list string="Excel Template">
+                <field name="name"/>
+                <field name="model_id"/>
+                <field name="lang"/>
+                <field name="company_id"/>
+                <field name="state" optional="1"/>
+                <field name="create_uid"/>
+                <field name="create_date"/>
+                <field name="write_date" optional="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="excel_template_action" model="ir.actions.act_window">
+        <field name="name">Excel Template</field>
+        <field name="res_model">excel.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="excel_template_view_tree"/>
+    </record>
+
+</odoo>
