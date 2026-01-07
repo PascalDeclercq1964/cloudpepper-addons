@@ -81,18 +81,29 @@ class WkExcelController(http.Controller):
                 ('Content-Disposition', f'inline; filename="{file_name}"'),
             ])
     
-    def get_field_labels(self, template):
+def get_field_labels(self, template):
         field_keys, labels = [], []
         for field in template.field_ids:
             key = field.field_id.name
-            # AANPASSING: Als het veld een Many2one relatie is, vraag dan specifiek de ID op
-            if field.field_id.ttype == 'many2one':
-                key += '/id'
             
+            # --- AANPASSING START ---
+            
+            # 1. Is het veld een Many2one relatie? (bv. partner_id)
+            # Gebruik dan /.id (met een punt!) om de Database ID te krijgen i.p.v. de XML ID.
+            if field.field_id.ttype == 'many2one':
+                key += '/.id'
+                
+            # 2. Is het veld het hoof-ID van de regel zelf?
+            # 'id' geeft standaard de XML-ID terug. '.id' geeft het getal.
+            elif key == 'id':
+                key = '.id'
+                
+            # --- AANPASSING EIND ---
+
             field_keys.insert(field.sequence, key)
             labels.insert(field.sequence, field.name)
 
-        return field_keys, labels    
+        return field_keys, labels     
         
     def get_csv_data(self, data, labels):
       
