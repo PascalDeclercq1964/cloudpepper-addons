@@ -81,7 +81,7 @@ class WkExcelController(http.Controller):
                 ('Content-Disposition', f'inline; filename="{file_name}"'),
             ])
     
-def get_field_labels(self, template):
+    def get_field_labels(self, template):
         field_keys, labels = [], []
         for field in template.field_ids:
             key = field.field_id.name
