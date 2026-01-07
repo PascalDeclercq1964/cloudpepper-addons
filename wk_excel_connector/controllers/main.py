@@ -91,7 +91,7 @@ class WkExcelController(http.Controller):
                 key += '/id'
             #einde aanpassing    
             
-            field_keys.insert(field.sequence, field.field_id.name)
+            field_keys.insert(field.sequence, key)
             labels.insert(field.sequence, field.name)
 
         return field_keys, labels
