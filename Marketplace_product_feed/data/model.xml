@@ -1,7 +1,7 @@
 <odoo>
     <record id="model_marketplace_product_feed" model="ir.model">
         <field name="name">Marketplace Product Feed</field>
-        <field name="model">x_marketplace_product_feed</field>
+        <field name="model">x_marketplace.product.feed</field>
         <field name="state">manual</field>
     </record>
 </odoo>
