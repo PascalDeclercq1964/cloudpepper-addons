@@ -1,0 +1,13 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+,,,,,,,
+access_excel_template_manager,Excel Template Manager,model_excel_template,wk_excel_connector.group_excel_connector_manager,1,1,1,1
+access_excel_template_field_manager,Excel Template Field Manager,model_excel_template_field,wk_excel_connector.group_excel_connector_manager,1,1,1,1
+access_excel_template_access_history_manager,Excel Template Access History Manager,model_excel_template_access_history,wk_excel_connector.group_excel_connector_manager,1,1,1,1
+
+
+access_excel_template_user,Excel Template User,model_excel_template,wk_excel_connector.group_excel_connector_user,1,0,0,0
+access_excel_template_field_user,Excel Template Field Manager,model_excel_template_field,wk_excel_connector.group_excel_connector_user,1,0,0,0
+access_excel_template_access_history_user,Excel Template Access History Manager,model_excel_template_access_history,wk_excel_connector.group_excel_connector_user,1,0,0,0
+
+
+access_excel_template_flush_access_history,Excel Template Flush Access History,model_excel_template_access_history,wk_excel_connector.group_excel_flush_history,1,0,0,1

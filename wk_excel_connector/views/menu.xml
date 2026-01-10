@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2015-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+<!-- See LICENSE file for full copyright and licensing details. -->
+<!-- "License URL : <https://store.webkul.com/license.html/>" -->
+
+<odoo>
+    <data>
+        <menuitem  id="wk_excel_connector_root" name="Excel Connector"/>
+
+            <menuitem  id="wk_excel_template_menu" name="Excel Template"
+                parent="wk_excel_connector.wk_excel_connector_root" action="wk_excel_connector.excel_template_action"/>
+
+    </data>
+</odoo>
