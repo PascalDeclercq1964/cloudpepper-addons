@@ -12,6 +12,7 @@
     ],
     "data": [
         "data/model.xml",
+        "security/ir.model.access.csv",
     ],
     "installable": True,
     "application": False,
