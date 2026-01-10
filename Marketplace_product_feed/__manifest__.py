@@ -10,6 +10,9 @@
         "stock",
         "website_sale",  # nodig voor description_ecommerce
     ],
+    "data": [
+        "data/model.xml",
+    ],
     "installable": True,
     "application": False,
 }
