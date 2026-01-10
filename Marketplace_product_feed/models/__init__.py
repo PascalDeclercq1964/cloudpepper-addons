@@ -1,1 +1,1 @@
-from . import marketplace_product_feed
+from . import x_marketplace_product_feed
