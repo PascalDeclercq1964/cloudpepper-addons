@@ -4,8 +4,10 @@ class MarketplaceProductFeed(models.Model):
     _name = "x_marketplace.product.feed"
     _description = "Marketplace Product Feed"
     _auto = False
+    _table='marketplace_product_feed'
     _rec_name = "sku"
 
+    id=fields.Integer(readonly=True)
     product_template_id = fields.Many2one("product.template", readonly=True)
     sku = fields.Char(readonly=True)
     barcode = fields.Char(readonly=True)
