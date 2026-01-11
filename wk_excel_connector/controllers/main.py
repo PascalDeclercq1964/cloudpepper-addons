@@ -108,7 +108,7 @@ class WkExcelController(http.Controller):
     def get_csv_data(self, data, labels):
       
         file = io.BytesIO()
-        writer = pycompat.csv_writer(file, quoting=csv.QUOTE_NONNUMERIC)
+        writer = pycompat.csv_writer(file, quoting=csv.QUOTE_ALL)
         writer.writerow(labels)
         writer.writerows(data)
         return file.getvalue()
