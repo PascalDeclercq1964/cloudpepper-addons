@@ -11,7 +11,6 @@
         "website_sale",  # nodig voor description_ecommerce
     ],
     "data": [
-        "data/model.xml",
         "security/ir.model.access.csv",
     ],
     "installable": True,
