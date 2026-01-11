@@ -110,7 +110,18 @@ class WkExcelController(http.Controller):
         file = io.BytesIO()
         writer = pycompat.csv_writer(file, quoting=csv.QUOTE_ALL)
         writer.writerow(labels)
-        writer.writerows(data)
+        # Escape linefeeds
+        cleaned_data = []
+        for row in data:
+            cleaned_row = []
+            for cell in row:
+                if isinstance(cell, str):
+                    # Escape linefeeds als literal \n (wordt zichtbare tekst)
+                    cell = cell.replace('\n', '\\n').replace('\r', '\\r')
+                cleaned_row.append(cell)
+            cleaned_data.append(cleaned_row)
+        
+        writer.writerows(cleaned_data)
         return file.getvalue()
 
     @http.route('/download_odc/template/<int:template_id>', type='http', auth='user')
