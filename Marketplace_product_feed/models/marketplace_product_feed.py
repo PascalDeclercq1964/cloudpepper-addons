@@ -34,6 +34,12 @@ class MarketplaceProductFeed(models.Model):
     image_4 = fields.Char(readonly=True)
     image_5 = fields.Char(readonly=True)
 
+    age_from = fields.Integer(readonly=True)
+    age_to = fields.Integer(readonly=True)
+    ce_document= fields.Char(readonly=True)
+    bol_category= fields.Char(readonly=True)
+    kaufland_category= fields.Char(readonly=True)
+
     def init(self):
         tools.drop_view_if_exists(self.env.cr, self._table)
         self.env.cr.execute("""
@@ -70,7 +76,12 @@ class MarketplaceProductFeed(models.Model):
                     MAX(CASE WHEN oi.rn = 2 THEN oi.url END) AS image_2,
                     MAX(CASE WHEN oi.rn = 3 THEN oi.url END) AS image_3,
                     MAX(CASE WHEN oi.rn = 4 THEN oi.url END) AS image_4,
-                    MAX(CASE WHEN oi.rn = 5 THEN oi.url END) AS image_5
+                    MAX(CASE WHEN oi.rn = 5 THEN oi.url END) AS image_5,
+                    pt.x_studio_leeftijd_van AS age_from,
+                    pt.x_studio_leeftijd_tot AS age_to,
+                    pt.x_studio_ce_document AS ce_document,
+                    pt.x_studio_bol_category AS bol_category,
+                    pt.x_studio_kaufland_category AS kaufland_category
                 FROM product_template pt
                 LEFT JOIN product_product pp
                     ON pp.product_tmpl_id = pt.id
