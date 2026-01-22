@@ -2,7 +2,7 @@ from odoo import models, fields, tools
 
 class MarketplaceProductFeed(models.Model):
     _name = "x_marketplace.product.feed"
-    _description = "Marketplace Product Feed"
+    _description = "TEST FEED 123"
     _auto = False
     _table = 'marketplace_product_feed'
     _rec_name = "sku"
