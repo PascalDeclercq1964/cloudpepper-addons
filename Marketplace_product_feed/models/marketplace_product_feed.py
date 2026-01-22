@@ -7,7 +7,7 @@ class MarketplaceProductFeed(models.Model):
     _table = 'marketplace_product_feed'
     _rec_name = "sku"
 
-    # Velden
+    # Velden definities
     id = fields.Integer(readonly=True)
     product_product_id = fields.Many2one("product.product", readonly=True)
     sku = fields.Char(readonly=True)
@@ -15,30 +15,27 @@ class MarketplaceProductFeed(models.Model):
     price = fields.Float(readonly=True)
     qty_available = fields.Float(readonly=True)
     category_name = fields.Char(readonly=True)
-
     name_nl = fields.Char(readonly=True)
     name_fr = fields.Char(readonly=True)
     name_de = fields.Char(readonly=True)
     name_en = fields.Char(readonly=True)
-
     description_nl = fields.Html(readonly=True)
     description_fr = fields.Html(readonly=True)
     description_de = fields.Html(readonly=True)
     description_en = fields.Html(readonly=True)
-
     product_url = fields.Char(readonly=True)
-
     image_1 = fields.Char(readonly=True)
     image_2 = fields.Char(readonly=True)
     image_3 = fields.Char(readonly=True)
     image_4 = fields.Char(readonly=True)
     image_5 = fields.Char(readonly=True)
-
-    age_from         = fields.Integer(readonly=True)
-    age_to           = fields.Integer(readonly=True)
-    ce_document      = fields.Char(readonly=True)
-    bol_category     = fields.Char(readonly=True)
-    kaufland_category= fields.Char(readonly=True)
+    
+    # De nieuwe velden
+    age_from = fields.Integer(readonly=True)
+    age_to = fields.Integer(readonly=True)
+    ce_document = fields.Char(readonly=True)
+    bol_category = fields.Char(readonly=True)
+    kaufland_category = fields.Char(readonly=True)
 
     def init(self):
         tools.drop_view_if_exists(self.env.cr, self._table)
@@ -83,22 +80,23 @@ class MarketplaceProductFeed(models.Model):
                     pt.x_studio_bol_category AS bol_category,
                     pt.x_studio_kaufland_category AS kaufland_category
                 FROM product_template pt
-                LEFT JOIN product_product pp
-                    ON pp.product_tmpl_id = pt.id
-                LEFT JOIN stock_quant sq
-                    ON sq.product_id = pp.id
-                LEFT JOIN product_category pc
-                    ON pc.id = pt.categ_id
-                LEFT JOIN ordered_images oi
-                    ON oi.product_tmpl_id = pt.id
+                LEFT JOIN product_product pp ON pp.product_tmpl_id = pt.id
+                LEFT JOIN stock_quant sq ON sq.product_id = pp.id
+                LEFT JOIN product_category pc ON pc.id = pt.categ_id
+                LEFT JOIN ordered_images oi ON oi.product_tmpl_id = pt.id
                 WHERE pt.active = TRUE
                 GROUP BY
                     pt.id,
-                    product_product_id,
+                    pp.id,
                     pt.default_code,
                     pt.list_price,
                     pc.complete_name,
                     pt.name,
-                    pt.description_ecommerce
+                    pt.description_ecommerce,
+                    pt.x_studio_leeftijd_van,
+                    pt.x_studio_leeftijd_tot,
+                    pt.x_studio_ce_document,
+                    pt.x_studio_bol_category,
+                    pt.x_studio_kaufland_category
             )
         """ % self._table)
