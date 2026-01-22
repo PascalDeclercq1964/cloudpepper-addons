@@ -1,4 +1,11 @@
 from odoo import models, fields, tools
+import logging
+
+_logger = logging.getLogger(__name__)
+
+# DIT GAAT ONS VERTELLEN OF HET BESTAND GELADEN WORDT
+_logger.info(">>>> HET BESTAND MARKETPLACE_PRODUCT_FEED WORDT GELADEN <<<<")
+
 
 class MarketplaceProductFeed(models.Model):
     _name = "x_marketplace.product.feed"
