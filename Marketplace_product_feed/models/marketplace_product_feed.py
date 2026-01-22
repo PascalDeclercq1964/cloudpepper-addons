@@ -9,7 +9,7 @@ _logger.info(">>>> HET BESTAND MARKETPLACE_PRODUCT_FEED WORDT GELADEN <<<<")
 
 class MarketplaceProductFeed(models.Model):
     _name = "x_marketplace.product.feed"
-    _description = "TEST FEED 123"
+    _description = "Marketplace Product Feed"
     _auto = False
     _table = 'marketplace_product_feed'
     _rec_name = "sku"
