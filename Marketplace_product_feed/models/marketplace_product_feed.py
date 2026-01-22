@@ -34,10 +34,10 @@ class MarketplaceProductFeed(models.Model):
     image_4 = fields.Char(readonly=True)
     image_5 = fields.Char(readonly=True)
 
-    age_from = fields.Integer(readonly=True)
-    age_to = fields.Integer(readonly=True)
-    ce_document= fields.Char(readonly=True)
-    bol_category= fields.Char(readonly=True)
+    age_from         = fields.Integer(readonly=True)
+    age_to           = fields.Integer(readonly=True)
+    ce_document      = fields.Char(readonly=True)
+    bol_category     = fields.Char(readonly=True)
     kaufland_category= fields.Char(readonly=True)
 
     def init(self):
