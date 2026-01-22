@@ -1,5 +1,5 @@
 {
-    "name": "Marketplace Product Feed",
+    "name": "Marketplace Product Feed xx",
     "version": "1.0.2",
     "category": "Sales",
     "summary": "SQL-based product feed for marketplaces",
