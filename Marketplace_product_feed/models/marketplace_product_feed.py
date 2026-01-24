@@ -46,7 +46,6 @@ class MarketplaceProductFeed(models.Model):
 
 def init(self):
         tools.drop_view_if_exists(self.env.cr, self._table)
-        # We gebruiken een subquery om de GROUP BY makkelijker te maken
         self.env.cr.execute("""
             CREATE OR REPLACE VIEW %s AS (
                 WITH ordered_images AS (
@@ -55,13 +54,6 @@ def init(self):
                         'https://www.chameleonstars.com/web/image/product.image/' || pi.id || '/image_1920' AS url,
                         ROW_NUMBER() OVER (PARTITION BY pi.product_tmpl_id ORDER BY pi.sequence, pi.id) AS rn
                     FROM product_image pi
-                ),
-                stock_data AS (
-                    SELECT 
-                        product_id, 
-                        SUM(quantity - reserved_quantity) as available 
-                    FROM stock_quant 
-                    GROUP BY product_id
                 )
                 SELECT
                     pt.id AS id,
@@ -69,7 +61,7 @@ def init(self):
                     pt.default_code AS sku,
                     pp.barcode AS barcode,
                     pt.list_price AS price,
-                    COALESCE(sd.available, 0) AS qty_available,
+                    COALESCE(SUM(sq.quantity - sq.reserved_quantity), 0) AS qty_available,
                     pc.complete_name AS category_name,
                     pt.name ->> 'nl_BE' AS name_nl,
                     pt.name ->> 'fr_FR' AS name_fr,
@@ -79,21 +71,46 @@ def init(self):
                     pt.description_ecommerce ->> 'fr_FR' AS description_fr,
                     pt.description_ecommerce ->> 'de_DE' AS description_de,
                     pt.description_ecommerce ->> 'en_US' AS description_en,
-                    '/shop/product/' || pt.id AS product_url,
-                    (SELECT url FROM ordered_images WHERE product_tmpl_id = pt.id AND rn = 1 LIMIT 1) AS image_1,
-                    (SELECT url FROM ordered_images WHERE product_tmpl_id = pt.id AND rn = 2 LIMIT 1) AS image_2,
-                    (SELECT url FROM ordered_images WHERE product_tmpl_id = pt.id AND rn = 3 LIMIT 1) AS image_3,
-                    (SELECT url FROM ordered_images WHERE product_tmpl_id = pt.id AND rn = 4 LIMIT 1) AS image_4,
-                    (SELECT url FROM ordered_images WHERE product_tmpl_id = pt.id AND rn = 5 LIMIT 1) AS image_5,
+                    'https://www.chameleonstars.com/shop/product/' || pt.id AS product_url,
+                    
+                    -- Afbeeldingen (MAX/CASE constructie)
+                    MAX(CASE WHEN oi.rn = 1 THEN oi.url END) AS image_1,
+                    MAX(CASE WHEN oi.rn = 2 THEN oi.url END) AS image_2,
+                    MAX(CASE WHEN oi.rn = 3 THEN oi.url END) AS image_3,
+                    MAX(CASE WHEN oi.rn = 4 THEN oi.url END) AS image_4,
+                    MAX(CASE WHEN oi.rn = 5 THEN oi.url END) AS image_5,
+                    
                     pt.x_studio_leeftijd_van AS age_from,
                     pt.x_studio_leeftijd_tot AS age_to,
-                    pt.x_studio_ce_document AS ce_document,
-                    pt.x_studio_bol_category AS bol_category,
-                    pt.x_studio_kaufland_category AS kaufland_category
+
+                    -- CE Document Externe Link
+                    CASE WHEN pt.x_studio_ce_document IS NOT NULL THEN
+                        'https://www.chameleonstars.com/web/content/' || pt.x_studio_ce_document || '?model=documents.document&download=true'
+                    ELSE NULL END AS ce_document,
+
+                    -- Categorie Namen via de gedeelde tabel
+                    cat_bol.x_name ->> 'fr_FR' AS bol_category,
+                    cat_kauf.x_name ->> 'fr_FR' AS kaufland_category
+
                 FROM product_template pt
-                JOIN product_product pp ON pp.product_tmpl_id = pt.id
-                LEFT JOIN stock_data sd ON sd.product_id = pp.id
+                LEFT JOIN product_product pp ON pp.product_tmpl_id = pt.id
+                LEFT JOIN stock_quant sq ON sq.product_id = pp.id
                 LEFT JOIN product_category pc ON pc.id = pt.categ_id
+                LEFT JOIN ordered_images oi ON oi.product_tmpl_id = pt.id
+                
+                -- Join voor Bol categorie
+                LEFT JOIN x_marketplace_categori cat_bol 
+                    ON cat_bol.id = pt.x_studio_bol_category
+                
+                -- Join voor Kaufland categorie
+                LEFT JOIN x_marketplace_categori cat_kauf 
+                    ON cat_kauf.id = pt.x_studio_kaufland_category
+                
                 WHERE pt.active = TRUE
+                GROUP BY
+                    pt.id, pp.id, pt.default_code, pp.barcode, pt.list_price, pc.complete_name, 
+                    pt.name, pt.description_ecommerce, pt.x_studio_leeftijd_van, 
+                    pt.x_studio_leeftijd_tot, pt.x_studio_ce_document,
+                    cat_bol.x_name, cat_kauf.x_name
             )
         """ % self._table)
