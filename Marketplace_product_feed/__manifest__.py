@@ -1,6 +1,6 @@
 {
     "name": "Marketplace Product Feed",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "category": "Sales",
     "summary": "SQL-based product feed for marketplaces",
     "description": "Provides a read-only SQL view exposing products for marketplace feeds",
