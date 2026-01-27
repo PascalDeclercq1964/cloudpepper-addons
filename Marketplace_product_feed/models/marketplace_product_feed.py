@@ -44,25 +44,34 @@ class MarketplaceProductFeed(models.Model):
     bol_category = fields.Char(readonly=True)
     kaufland_category = fields.Char(readonly=True)
 
+    # Afmetingen Box
+    length_box = fields.Float(readonly=True)
+    width_box = fields.Float(readonly=True)
+    height_box = fields.Float(readonly=True)
+
+    # Afmetingen Gemonteerd
+    length_mounted = fields.Float(readonly=True)
+    width_mounted = fields.Float(readonly=True)
+    height_mounted = fields.Float(readonly=True)
+
+    # Many2one Attributen (Tekstwaarden)
+    recommended_age = fields.Char(readonly=True)
+    battery_type = fields.Char(readonly=True)
+
 def init(self):
         tools.drop_view_if_exists(self.env.cr, self._table)
         self.env.cr.execute("""
             CREATE OR REPLACE VIEW %s AS (
-                WITH ordered_images AS (
-                    SELECT
-                        pi.product_tmpl_id,
-                        'https://www.chameleonstars.com/web/image/product.image/' || pi.id || '/image_1920' AS url,
-                        ROW_NUMBER() OVER (PARTITION BY pi.product_tmpl_id ORDER BY pi.sequence, pi.id) AS rn
-                    FROM product_image pi
-                )
                 SELECT
-                    pt.id AS id,
+                    pp.id AS id,
                     pp.id AS product_product_id,
-                    pt.default_code AS sku,
+                    COALESCE(pp.default_code, pt.default_code) AS sku,
                     pp.barcode AS barcode,
                     pt.list_price AS price,
-                    COALESCE(SUM(sq.quantity - sq.reserved_quantity), 0) AS qty_available,
+                    COALESCE(sq.on_hand, 0) AS qty_available,
                     pc.complete_name AS category_name,
+                    
+                    -- Productvertalingen
                     pt.name ->> 'nl_BE' AS name_nl,
                     pt.name ->> 'fr_FR' AS name_fr,
                     pt.name ->> 'de_DE' AS name_de,
@@ -71,46 +80,68 @@ def init(self):
                     pt.description_ecommerce ->> 'fr_FR' AS description_fr,
                     pt.description_ecommerce ->> 'de_DE' AS description_de,
                     pt.description_ecommerce ->> 'en_US' AS description_en,
+                    
                     'https://www.chameleonstars.com/shop/product/' || pt.id AS product_url,
                     
-                    -- Afbeeldingen (MAX/CASE constructie)
-                    MAX(CASE WHEN oi.rn = 1 THEN oi.url END) AS image_1,
-                    MAX(CASE WHEN oi.rn = 2 THEN oi.url END) AS image_2,
-                    MAX(CASE WHEN oi.rn = 3 THEN oi.url END) AS image_3,
-                    MAX(CASE WHEN oi.rn = 4 THEN oi.url END) AS image_4,
-                    MAX(CASE WHEN oi.rn = 5 THEN oi.url END) AS image_5,
-                    
+                    -- Afbeeldingen (Subqueries)
+                    (SELECT 'https://www.chameleonstars.com/web/image/product.image/' || pi.id || '/image_1920'
+                     FROM product_image pi WHERE pi.product_tmpl_id = pt.id ORDER BY pi.sequence, pi.id LIMIT 1 OFFSET 0) AS image_1,
+                    (SELECT 'https://www.chameleonstars.com/web/image/product.image/' || pi.id || '/image_1920'
+                     FROM product_image pi WHERE pi.product_tmpl_id = pt.id ORDER BY pi.sequence, pi.id LIMIT 1 OFFSET 1) AS image_2,
+                    (SELECT 'https://www.chameleonstars.com/web/image/product.image/' || pi.id || '/image_1920'
+                     FROM product_image pi WHERE pi.product_tmpl_id = pt.id ORDER BY pi.sequence, pi.id LIMIT 1 OFFSET 2) AS image_3,
+                    (SELECT 'https://www.chameleonstars.com/web/image/product.image/' || pi.id || '/image_1920'
+                     FROM product_image pi WHERE pi.product_tmpl_id = pt.id ORDER BY pi.sequence, pi.id LIMIT 1 OFFSET 3) AS image_4,
+                    (SELECT 'https://www.chameleonstars.com/web/image/product.image/' || pi.id || '/image_1920'
+                     FROM product_image pi WHERE pi.product_tmpl_id = pt.id ORDER BY pi.sequence, pi.id LIMIT 1 OFFSET 4) AS image_5,
+
                     pt.x_studio_leeftijd_van AS age_from,
                     pt.x_studio_leeftijd_tot AS age_to,
 
-                    -- CE Document Externe Link
+                    -- Afmetingen
+                    pt.x_studio_length_box AS length_box,
+                    pt.x_studio_width_box AS width_box,
+                    pt.x_studio_height_box AS height_box,
+                    pt.x_studio_length_mounted AS length_mounted,
+                    pt.x_studio_width_mounted AS width_mounted,
+                    pt.x_studio_height_mounted AS height_mounted,
+
+                    -- CE Document
                     CASE WHEN pt.x_studio_ce_document IS NOT NULL THEN
                         'https://www.chameleonstars.com/web/content/' || pt.x_studio_ce_document || '?model=documents.document&download=true'
                     ELSE NULL END AS ce_document,
 
-                    -- Categorie Namen via de gedeelde tabel
-                    cat_bol.x_name ->> 'fr_FR' AS bol_category,
-                    cat_kauf.x_name ->> 'fr_FR' AS kaufland_category
+                    -- Categorieën (fr_FR met fallback)
+                    COALESCE(cat_bol.x_name ->> 'fr_FR', cat_bol.x_name ->> 'nl_BE') AS bol_category,
+                    COALESCE(cat_kauf.x_name ->> 'fr_FR', cat_kauf.x_name ->> 'nl_BE') AS kaufland_category,
 
-                FROM product_template pt
-                LEFT JOIN product_product pp ON pp.product_tmpl_id = pt.id
-                LEFT JOIN stock_quant sq ON sq.product_id = pp.id
+                    -- Many2one Attributen (Vertaalbare naam uit product_attribute_value)
+                    pav_age.name ->> 'fr_FR' AS recommended_age,
+                    pav_batt.name ->> 'fr_FR' AS battery_type
+
+                FROM product_product pp
+                JOIN product_template pt ON pp.product_tmpl_id = pt.id
                 LEFT JOIN product_category pc ON pc.id = pt.categ_id
-                LEFT JOIN ordered_images oi ON oi.product_tmpl_id = pt.id
                 
-                -- Join voor Bol categorie
-                LEFT JOIN x_marketplace_categori cat_bol 
-                    ON cat_bol.id = pt.x_studio_bol_category
+                -- Voorraad
+                LEFT JOIN (
+                    SELECT q.product_id, SUM(q.quantity) AS on_hand
+                    FROM stock_quant q
+                    JOIN stock_location l ON q.location_id = l.id
+                    WHERE l.usage = 'internal'
+                    GROUP BY q.product_id
+                ) sq ON sq.product_id = pp.id
                 
-                -- Join voor Kaufland categorie
-                LEFT JOIN x_marketplace_categori cat_kauf 
-                    ON cat_kauf.id = pt.x_studio_kaufland_category
+                -- Categorie Joins
+                LEFT JOIN x_marketplace_categori cat_bol ON cat_bol.id = pt.x_studio_bol_category
+                LEFT JOIN x_marketplace_categori cat_kauf ON cat_kauf.id = pt.x_studio_kaufland_category
                 
-                WHERE pt.active = TRUE
-                GROUP BY
-                    pt.id, pp.id, pt.default_code, pp.barcode, pt.list_price, pc.complete_name, 
-                    pt.name, pt.description_ecommerce, pt.x_studio_leeftijd_van, 
-                    pt.x_studio_leeftijd_tot, pt.x_studio_ce_document,
-                    cat_bol.x_name, cat_kauf.x_name
+                -- Attribuut Joins voor de Many2one velden
+                LEFT JOIN product_attribute_value pav_age ON pav_age.id = pt.x_studio_recommendedage
+                LEFT JOIN product_attribute_value pav_batt ON pav_batt.id = pt.x_studio_battry_type
+                
+                WHERE pp.active = TRUE 
+                  AND pt.active = TRUE 
+                  AND pp.barcode IS NOT NULL
             )
         """ % self._table)
