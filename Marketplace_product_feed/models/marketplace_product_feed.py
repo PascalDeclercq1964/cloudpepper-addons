@@ -61,7 +61,7 @@ def init(self):
                     pt.default_code AS sku,
                     pp.barcode AS barcode,
                     pt.list_price AS price,
-                    COALESCE(SUM(sq.quantity - sq.reserved_quantity), 0) AS qty_available,
+                    COALESCE(sum(sq.on_hand), 0) AS qty_available,
                     pc.complete_name AS category_name,
                     pt.name ->> 'nl_BE' AS name_nl,
                     pt.name ->> 'fr_FR' AS name_fr,
@@ -94,7 +94,7 @@ def init(self):
 
                 FROM product_template pt
                 LEFT JOIN product_product pp ON pp.product_tmpl_id = pt.id
-                LEFT JOIN stock_quant sq ON sq.product_id = pp.id
+                LEFT JOIN (SELECT p.id, SUM(q.quantity) AS On_Hand FROM stock_quant q JOIN product_product p ON q.product_id = p.id JOIN stock_location l ON q.location_id = l.id WHERE l.usage = 'internal' GROUP BY p.id) sq ON sq.id = pp.id
                 LEFT JOIN product_category pc ON pc.id = pt.categ_id
                 LEFT JOIN ordered_images oi ON oi.product_tmpl_id = pt.id
                 
