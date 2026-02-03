@@ -43,6 +43,7 @@ class MarketplaceProductFeed(models.Model):
     ce_document = fields.Char(readonly=True)
     bol_category = fields.Char(readonly=True)
     kaufland_category = fields.Char(readonly=True)
+    cdiscount_category = fields.Char(readonly=True)
 
     # Afmetingen Box
     length_box = fields.Float(readonly=True)
@@ -114,6 +115,7 @@ def init(self):
                     -- Categorieën (fr_FR met fallback)
                     COALESCE(cat_bol.x_name ->> 'fr_FR', cat_bol.x_name ->> 'nl_BE') AS bol_category,
                     COALESCE(cat_kauf.x_name ->> 'fr_FR', cat_kauf.x_name ->> 'nl_BE') AS kaufland_category,
+                    COALESCE(cat_cdisc.x_name ->> 'fr_FR', cat_cdisc.x_name ->> 'nl_BE') AS cdiscount_category,
 
                     -- Many2one Attributen (Vertaalbare naam uit product_attribute_value)
                     pav_age.name ->> 'fr_FR' AS recommended_age,
@@ -135,10 +137,11 @@ def init(self):
                 -- Categorie Joins
                 LEFT JOIN x_marketplace_categori cat_bol ON cat_bol.id = pt.x_studio_bol_category
                 LEFT JOIN x_marketplace_categori cat_kauf ON cat_kauf.id = pt.x_studio_kaufland_category
+                LEFT JOIN x_marketplace_categori cat_cdisc ON cat_cdisc.id = pt.x_studio_cdiscount_category
                 
                 -- Attribuut Joins voor de Many2one velden
                 LEFT JOIN product_attribute_value pav_age ON pav_age.id = pt.x_studio_recommendedage
-                LEFT JOIN product_attribute_value pav_batt ON pav_batt.id = pt.x_studio_battry_type
+                LEFT JOIN product_attribute_value pav_batt ON pav_batt.id = pt.x_studio_battery_type
                 
                 WHERE pp.active = TRUE 
                   AND pt.active = TRUE 
