@@ -31,6 +31,7 @@ class MarketplaceProductFeed(models.Model):
     description_de = fields.Html(readonly=True)
     description_en = fields.Html(readonly=True)
     product_url = fields.Char(readonly=True)
+    main_image = fields.Char(readonly=True)
     image_1 = fields.Char(readonly=True)
     image_2 = fields.Char(readonly=True)
     image_3 = fields.Char(readonly=True)
@@ -73,17 +74,19 @@ def init(self):
                     pc.complete_name AS category_name,
                     
                     -- Productvertalingen
-                    pt.name ->> 'nl_BE' AS name_nl,
+                    pt.name ->> 'nl_NL' AS name_nl,
                     pt.name ->> 'fr_FR' AS name_fr,
                     pt.name ->> 'de_DE' AS name_de,
                     pt.name ->> 'en_US' AS name_en,
-                    pt.description_ecommerce ->> 'nl_BE' AS description_nl,
+                    pt.description_ecommerce ->> 'nl_NL' AS description_nl,
                     pt.description_ecommerce ->> 'fr_FR' AS description_fr,
                     pt.description_ecommerce ->> 'de_DE' AS description_de,
                     pt.description_ecommerce ->> 'en_US' AS description_en,
                     
                     'https://www.chameleonstars.com/shop/product/' || pt.id AS product_url,
                     
+                    -- De hoofdafbeelding (rechtsboven op productniveau)
+                    'https://www.chameleonstars.com/web/image/product.template/' || pt.id || '/image_1920' AS main_image,
                     -- Afbeeldingen (Subqueries)
                     (SELECT 'https://www.chameleonstars.com/web/image/product.image/' || pi.id || '/image_1920'
                      FROM product_image pi WHERE pi.product_tmpl_id = pt.id ORDER BY pi.sequence, pi.id LIMIT 1 OFFSET 0) AS image_1,
@@ -113,9 +116,9 @@ def init(self):
                     ELSE NULL END AS ce_document,
 
                     -- Categorieën (fr_FR met fallback)
-                    COALESCE(cat_bol.x_name ->> 'fr_FR', cat_bol.x_name ->> 'nl_BE') AS bol_category,
-                    COALESCE(cat_kauf.x_name ->> 'fr_FR', cat_kauf.x_name ->> 'nl_BE') AS kaufland_category,
-                    COALESCE(cat_cdisc.x_name ->> 'fr_FR', cat_cdisc.x_name ->> 'nl_BE') AS cdiscount_category,
+                    COALESCE(cat_bol.x_name ->> 'fr_FR', cat_bol.x_name ->> 'nl_NL') AS bol_category,
+                    COALESCE(cat_kauf.x_name ->> 'fr_FR', cat_kauf.x_name ->> 'nl_NL') AS kaufland_category,
+                    COALESCE(cat_cdisc.x_name ->> 'fr_FR', cat_cdisc.x_name ->> 'nl_NL') AS cdiscount_category,
 
                     -- Many2one Attributen (Vertaalbare naam uit product_attribute_value)
                     pav_age.name ->> 'fr_FR' AS recommended_age,
