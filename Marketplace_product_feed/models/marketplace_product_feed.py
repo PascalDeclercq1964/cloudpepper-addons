@@ -94,7 +94,7 @@ def init(self):
                     COALESCE(cat_kauf.x_name ->> 'fr_FR', cat_kauf.x_name ->> 'nl_NL') AS kaufland_category,
                     COALESCE(cat_cdisc.x_name ->> 'fr_FR', cat_cdisc.x_name ->> 'nl_NL') AS cdiscount_category,
 
-                    ( SELECT jsonb_object_agg(lower(def.x_name ->> 'en_US'), val.x_value)
+                    ( SELECT jsonb_object_agg(lower(def.x_name ->> 'en_US'), replace(val.x_value,';', '|'))
                         FROM x_product_property_val val
                         JOIN x_product_property_def def ON val.x_property = def.id
                         WHERE val.x_product = pt.id
