@@ -59,15 +59,15 @@ def init(self):
                     pc.complete_name AS category_name,
                     
                     -- Productvertalingen
-                    pt.name ->> 'nl_NL' AS name_nl,
-                    pt.name ->> 'fr_FR' AS name_fr,
-                    pt.name ->> 'de_DE' AS name_de,
-                    pt.name ->> 'en_US' AS name_en,
-                    pt.description_ecommerce ->> 'nl_NL' AS description_nl,
-                    pt.description_ecommerce ->> 'fr_FR' AS description_fr,
-                    pt.description_ecommerce ->> 'de_DE' AS description_de,
-                    pt.description_ecommerce ->> 'en_US' AS description_en,
-                    
+                    replace(pt.name ->> 'nl_NL', ';', ' ')::text AS name_nl,
+                    replace(pt.name ->> 'fr_FR', ';', ' ')::text AS name_fr,
+                    replace(pt.name ->> 'de_DE', ';', ' ')::text AS name_de,
+                    replace(pt.name ->> 'en_US', ';', ' ')::text AS name_en,
+                    replace(pt.description_ecommerce ->> 'nl_NL', ';', '')::text AS description_nl,
+                    replace(pt.description_ecommerce ->> 'fr_FR', ';', '')::text AS description_fr,
+                    replace(pt.description_ecommerce ->> 'de_DE', ';', '')::text AS description_de,
+                    replace(pt.description_ecommerce ->> 'en_US', ';', '')::text AS description_en,
+                   
                     'https://www.chameleonstars.com/shop/product/' || pt.id AS product_url,
                     
                     -- De hoofdafbeelding (rechtsboven op productniveau)
