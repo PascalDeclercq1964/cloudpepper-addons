@@ -364,16 +364,18 @@ class SaleOrder(models.Model):
         for mk_instance_id in mk_instance_ids:
             mk_log_id = self.env['mk.log'].create_update_log(mk_instance_id=mk_instance_id, operation_type='export')
             mk_log_line_dict = self.env.context.get('mk_log_line_dict', {'error': [], 'success': []})
+            cutoff_date = fields.Datetime.now() - relativedelta(months=3)
             picking_ids = self.env['stock.picking'].search(
                 ['|', ('mk_instance_id', '=', mk_instance_id.id), ('backorder_id.mk_instance_id', '=', mk_instance_id.id), ('updated_in_marketplace', '=', False), ('bol_fulfilment_method', '=', 'FBR'), ('state', '=', 'done'),
-                 ('location_dest_id.usage', '=', 'customer'), ('is_marketplace_exception', '=', False)], order='date')
+                 ('location_dest_id.usage', '=', 'customer'), ('is_marketplace_exception', '=', False),
+                 ('carrier_id', '!=', False), ('carrier_tracking_ref', '!=', False), ('date_done', '>=', cutoff_date)], order='date')
             picking_ids.filtered(lambda x: not x.mk_instance_id).write({'mk_instance_id': mk_instance_id.id})
             picking_ids.with_context(mk_log_line_dict=mk_log_line_dict, mk_log_id=mk_log_id).do_bol_update_order_status(manual_process=False)
             self.env['mk.log'].create_update_log(mk_instance_id=mk_instance_id, mk_log_id=mk_log_id, mk_log_line_dict=mk_log_line_dict)
             if not mk_log_id.log_line_ids and not self.env.context.get('log_id', False):
                 mk_log_id.unlink()
         return True
-
+        
     def _get_available_item_for_cancel_in_bol(self):
         item_to_be_cancelled = self.env['sale.order.line']
         for order in self.filtered(lambda x: x.mk_id and x.marketplace == 'bol'):
