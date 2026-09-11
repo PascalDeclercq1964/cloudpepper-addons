@@ -2,6 +2,7 @@ import logging
 import pprint
 from odoo.tools.profiler import Profiler, ExecutionContext
 
+from dateutil.relativedelta import relativedelta
 from psycopg2 import OperationalError
 
 from odoo import models, fields, tools, api, _
