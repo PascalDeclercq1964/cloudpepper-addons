@@ -37,6 +37,8 @@ class MarketplaceProductFeed(models.Model):
     image_4 = fields.Char(readonly=True)
     image_5 = fields.Char(readonly=True)
     
+    product_properties = fields.Char(readonly=True)
+
     # De nieuwe velden
     age_from = fields.Integer(readonly=True)
     age_to = fields.Integer(readonly=True)
@@ -95,6 +97,8 @@ def init(self):
                      FROM product_image pi WHERE pi.product_tmpl_id = pt.id ORDER BY pi.sequence, pi.id LIMIT 1 OFFSET 3) AS image_4,
                     (SELECT 'https://www.chameleonstars.com/web/image/product.image/' || pi.id || '/image_1920'
                      FROM product_image pi WHERE pi.product_tmpl_id = pt.id ORDER BY pi.sequence, pi.id LIMIT 1 OFFSET 4) AS image_5,
+
+                    CAST(pt.product_properties AS TEXT) AS product_properties,
 
                     pt.x_studio_leeftijd_van AS age_from,
                     pt.x_studio_leeftijd_tot AS age_to,

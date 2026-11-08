@@ -14,6 +14,7 @@ from odoo import http, fields
 from odoo.http import request
 from odoo.tools import pycompat, html_escape
 from operator import itemgetter
+from .feed_expand import expand_columns  # AANPASSING Chameleonstars
 
 _logger = logging.getLogger(__name__)
 
@@ -70,8 +71,10 @@ class WkExcelController(http.Controller):
                 else:
                     image_urls.append(item)
             data[i] = image_urls
-               
-     
+
+        # --- AANPASSING Chameleonstars: kolommen uitklappen (properties, opsommingstekens) ---
+        labels, data = expand_columns(labels, data, self.get_expand_specs(template))
+
         file_name = f'{template.name}.csv'
       
         return request.make_response(
@@ -103,8 +106,23 @@ class WkExcelController(http.Controller):
             field_keys.insert(field.sequence, key)
             labels.insert(field.sequence, field.name)
 
-        return field_keys, labels     
-        
+        return field_keys, labels
+
+    def get_expand_specs(self, template):
+        # --- AANPASSING Chameleonstars ---
+        # Zelfde volgorde-logica als get_field_labels, zodat specs[i] bij labels[i] hoort.
+        specs = []
+        for field in template.field_ids:
+            spec = None
+            if field.expand_mode:
+                spec = {
+                    'mode': field.expand_mode,
+                    'prefix': field.expand_prefix or '',
+                    'max': field.expand_max or 0,
+                }
+            specs.insert(field.sequence, spec)
+        return specs
+
     def get_csv_data(self, data, labels):
       
         file = io.BytesIO()

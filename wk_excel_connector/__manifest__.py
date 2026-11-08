@@ -16,7 +16,7 @@
 
 {
     'name': 'Excel Odoo Connector',
-    'version': '6.0.0',
+    'version': '6.0.1',
     'category': 'Accounting',
     'author': 'Webkul Software Pvt. Ltd.',
     'website': 'https://store.webkul.com/odoo-excel-connector.html',

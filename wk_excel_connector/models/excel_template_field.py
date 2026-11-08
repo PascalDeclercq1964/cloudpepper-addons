@@ -26,6 +26,27 @@ class ExcelTemplateField(models.Model):
     )
     sequence = fields.Integer("Sequence")
 
+    # --- AANPASSING Chameleonstars: kolommen uitklappen ---
+    expand_mode = fields.Selection(
+        [
+            ('json', 'JSON-object: kolom per sleutel'),
+            ('html_list', 'HTML-lijst: kolom per item'),
+        ],
+        string="Uitklappen",
+        help="Leeg: gewone kolom.\n"
+             "JSON-object: bv. Product Properties wordt prop_brand, prop_colors, ...\n"
+             "HTML-lijst: de opsommingspunten van een beschrijving worden bullet_fr_1, bullet_fr_2, ...",
+    )
+    expand_prefix = fields.Char(
+        "Kolomprefix",
+        help="Begin van de kolomnamen, bv. prop_ of bullet_fr_. Leeg = naam van deze regel.",
+    )
+    expand_max = fields.Integer(
+        "Max. kolommen",
+        help="Alleen voor HTML-lijst. 0 = zoveel als nodig. "
+             "Met een vast getal (bv. 5) bestaan de kolommen altijd, ook als ze leeg zijn.",
+    )
+
     @api.onchange('field_id')
     def onchange_field_id(self):
         self.name = self.field_id.field_description

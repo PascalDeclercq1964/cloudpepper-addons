@@ -63,6 +63,12 @@
                                             <field name="name"/>
                                             <field name="model"/>
                                         </group>
+                                        <!-- AANPASSING Chameleonstars: kolommen uitklappen -->
+                                        <group string="Uitklappen">
+                                            <field name="expand_mode"/>
+                                            <field name="expand_prefix" invisible="not expand_mode"/>
+                                            <field name="expand_max" invisible="expand_mode != 'html_list'"/>
+                                        </group>
                                     </sheet>
                                 </form>
                                 <list>
@@ -70,6 +76,8 @@
                                     <field name="field_id"/>
                                     <field name="name"/>
                                     <field name="model"/>
+                                    <field name="expand_mode" optional="show"/>
+                                    <field name="expand_prefix" optional="show"/>
                                 </list>
                             </field>
                         </page>
