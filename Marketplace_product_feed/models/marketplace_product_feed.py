@@ -31,35 +31,19 @@ class MarketplaceProductFeed(models.Model):
     description_de = fields.Html(readonly=True)
     description_en = fields.Html(readonly=True)
     product_url = fields.Char(readonly=True)
+    main_image = fields.Char(readonly=True)
     image_1 = fields.Char(readonly=True)
     image_2 = fields.Char(readonly=True)
     image_3 = fields.Char(readonly=True)
     image_4 = fields.Char(readonly=True)
     image_5 = fields.Char(readonly=True)
     
-    product_properties = fields.Char(readonly=True)
-
-    # De nieuwe velden
-    age_from = fields.Integer(readonly=True)
-    age_to = fields.Integer(readonly=True)
     ce_document = fields.Char(readonly=True)
     bol_category = fields.Char(readonly=True)
     kaufland_category = fields.Char(readonly=True)
     cdiscount_category = fields.Char(readonly=True)
-
-    # Afmetingen Box
-    length_box = fields.Float(readonly=True)
-    width_box = fields.Float(readonly=True)
-    height_box = fields.Float(readonly=True)
-
-    # Afmetingen Gemonteerd
-    length_mounted = fields.Float(readonly=True)
-    width_mounted = fields.Float(readonly=True)
-    height_mounted = fields.Float(readonly=True)
-
-    # Many2one Attributen (Tekstwaarden)
-    recommended_age = fields.Char(readonly=True)
-    battery_type = fields.Char(readonly=True)
+    product_group = fields.Char(readonly=True)
+    product_properties = fields.Char(readonly=True)
 
 def init(self):
         tools.drop_view_if_exists(self.env.cr, self._table)
@@ -75,17 +59,19 @@ def init(self):
                     pc.complete_name AS category_name,
                     
                     -- Productvertalingen
-                    pt.name ->> 'nl_BE' AS name_nl,
-                    pt.name ->> 'fr_FR' AS name_fr,
-                    pt.name ->> 'de_DE' AS name_de,
-                    pt.name ->> 'en_US' AS name_en,
-                    pt.description_ecommerce ->> 'nl_BE' AS description_nl,
-                    pt.description_ecommerce ->> 'fr_FR' AS description_fr,
-                    pt.description_ecommerce ->> 'de_DE' AS description_de,
-                    pt.description_ecommerce ->> 'en_US' AS description_en,
-                    
+                    replace(pt.name ->> 'nl_NL', ';', ' ')::text AS name_nl,
+                    replace(pt.name ->> 'fr_FR', ';', ' ')::text AS name_fr,
+                    replace(pt.name ->> 'de_DE', ';', ' ')::text AS name_de,
+                    replace(pt.name ->> 'en_US', ';', ' ')::text AS name_en,
+                    replace(pt.description_ecommerce ->> 'nl_NL', ';', '')::text AS description_nl,
+                    replace(pt.description_ecommerce ->> 'fr_FR', ';', '')::text AS description_fr,
+                    replace(pt.description_ecommerce ->> 'de_DE', ';', '')::text AS description_de,
+                    replace(pt.description_ecommerce ->> 'en_US', ';', '')::text AS description_en,
+                   
                     'https://www.chameleonstars.com/shop/product/' || pt.id AS product_url,
                     
+                    -- De hoofdafbeelding (rechtsboven op productniveau)
+                    'https://www.chameleonstars.com/web/image/product.template/' || pt.id || '/image_1920' AS main_image,
                     -- Afbeeldingen (Subqueries)
                     (SELECT 'https://www.chameleonstars.com/web/image/product.image/' || pi.id || '/image_1920'
                      FROM product_image pi WHERE pi.product_tmpl_id = pt.id ORDER BY pi.sequence, pi.id LIMIT 1 OFFSET 0) AS image_1,
@@ -98,32 +84,22 @@ def init(self):
                     (SELECT 'https://www.chameleonstars.com/web/image/product.image/' || pi.id || '/image_1920'
                      FROM product_image pi WHERE pi.product_tmpl_id = pt.id ORDER BY pi.sequence, pi.id LIMIT 1 OFFSET 4) AS image_5,
 
-                    CAST(pt.product_properties AS TEXT) AS product_properties,
-
-                    pt.x_studio_leeftijd_van AS age_from,
-                    pt.x_studio_leeftijd_tot AS age_to,
-
-                    -- Afmetingen
-                    pt.x_studio_length_box AS length_box,
-                    pt.x_studio_width_box AS width_box,
-                    pt.x_studio_height_box AS height_box,
-                    pt.x_studio_length_mounted AS length_mounted,
-                    pt.x_studio_width_mounted AS width_mounted,
-                    pt.x_studio_height_mounted AS height_mounted,
-
                     -- CE Document
                     CASE WHEN pt.x_studio_ce_document IS NOT NULL THEN
                         'https://www.chameleonstars.com/web/content/' || pt.x_studio_ce_document || '?model=documents.document&download=true'
                     ELSE NULL END AS ce_document,
 
                     -- Categorieën (fr_FR met fallback)
-                    COALESCE(cat_bol.x_name ->> 'fr_FR', cat_bol.x_name ->> 'nl_BE') AS bol_category,
-                    COALESCE(cat_kauf.x_name ->> 'fr_FR', cat_kauf.x_name ->> 'nl_BE') AS kaufland_category,
-                    COALESCE(cat_cdisc.x_name ->> 'fr_FR', cat_cdisc.x_name ->> 'nl_BE') AS cdiscount_category,
+                    COALESCE(cat_bol.x_name ->> 'fr_FR', cat_bol.x_name ->> 'nl_NL') AS bol_category,
+                    COALESCE(cat_kauf.x_name ->> 'fr_FR', cat_kauf.x_name ->> 'nl_NL') AS kaufland_category,
+                    COALESCE(cat_cdisc.x_name ->> 'fr_FR', cat_cdisc.x_name ->> 'nl_NL') AS cdiscount_category,
 
-                    -- Many2one Attributen (Vertaalbare naam uit product_attribute_value)
-                    pav_age.name ->> 'fr_FR' AS recommended_age,
-                    pav_batt.name ->> 'fr_FR' AS battery_type
+                    ( SELECT jsonb_object_agg(lower(def.x_name ->> 'en_US'), replace(val.x_value,';', '|'))
+                        FROM x_product_property_val val
+                        JOIN x_product_property_def def ON val.x_property = def.id
+                        WHERE val.x_product = pt.id
+                        )::text AS product_properties
+
 
                 FROM product_product pp
                 JOIN product_template pt ON pp.product_tmpl_id = pt.id
@@ -151,4 +127,4 @@ def init(self):
                   AND pt.active = TRUE 
                   AND pp.barcode IS NOT NULL
             )
-        """ % self._table)
+        """ % self._table)

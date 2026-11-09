@@ -86,6 +86,7 @@ class StockPicking(models.Model):
                 if manual_process:
                     raise MarketplaceException(log_message)
                 else:
+                    picking.write({'is_marketplace_exception': True, 'exception_message': log_message})
                     not manual_process and mk_log_line_dict['error'].append({'log_message': 'UPDATE ORDER STATUS: Bol order {}, ERROR: {}.'.format(order_id.name, log_message)})
                     continue
             if any([line.product_id.type != 'service' and not line.mk_id for line in order_id.order_line]):
@@ -93,6 +94,7 @@ class StockPicking(models.Model):
                 if manual_process:
                     raise MarketplaceException(log_message)
                 else:
+                    picking.write({'is_marketplace_exception': True, 'exception_message': log_message})
                     not manual_process and mk_log_line_dict['error'].append({'log_message': 'UPDATE ORDER STATUS: {}'.format(log_message)})
                     continue
             order_items_ids = set([])
