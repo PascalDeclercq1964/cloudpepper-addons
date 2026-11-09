@@ -26,10 +26,14 @@ class MarketplaceProductFeed(models.Model):
     name_fr = fields.Char(readonly=True)
     name_de = fields.Char(readonly=True)
     name_en = fields.Char(readonly=True)
+    name_it = fields.Char(readonly=True)
+    name_es = fields.Char(readonly=True)
     description_nl = fields.Html(readonly=True)
     description_fr = fields.Html(readonly=True)
     description_de = fields.Html(readonly=True)
     description_en = fields.Html(readonly=True)
+    description_it = fields.Html(readonly=True)
+    description_es = fields.Html(readonly=True)
     product_url = fields.Char(readonly=True)
     main_image = fields.Char(readonly=True)
     image_1 = fields.Char(readonly=True)
@@ -37,7 +41,7 @@ class MarketplaceProductFeed(models.Model):
     image_3 = fields.Char(readonly=True)
     image_4 = fields.Char(readonly=True)
     image_5 = fields.Char(readonly=True)
-    
+
     ce_document = fields.Char(readonly=True)
     bol_category = fields.Char(readonly=True)
     kaufland_category = fields.Char(readonly=True)
@@ -45,7 +49,9 @@ class MarketplaceProductFeed(models.Model):
     product_group = fields.Char(readonly=True)
     product_properties = fields.Char(readonly=True)
 
-def init(self):
+    # LET OP: init() moet IN de klasse staan (ingesprongen). Staat ze ernaast,
+    # dan voert Odoo ze nooit uit en verandert een module-update de view niet.
+    def init(self):
         tools.drop_view_if_exists(self.env.cr, self._table)
         self.env.cr.execute("""
             CREATE OR REPLACE VIEW %s AS (
@@ -57,19 +63,23 @@ def init(self):
                     pt.list_price AS price,
                     COALESCE(sq.on_hand, 0) AS qty_available,
                     pc.complete_name AS category_name,
-                    
-                    -- Productvertalingen
+
+                    -- Productvertalingen (leeg als de vertaling ontbreekt)
                     replace(pt.name ->> 'nl_NL', ';', ' ')::text AS name_nl,
                     replace(pt.name ->> 'fr_FR', ';', ' ')::text AS name_fr,
                     replace(pt.name ->> 'de_DE', ';', ' ')::text AS name_de,
                     replace(pt.name ->> 'en_US', ';', ' ')::text AS name_en,
+                    replace(pt.name ->> 'it_IT', ';', ' ')::text AS name_it,
+                    replace(pt.name ->> 'es_ES', ';', ' ')::text AS name_es,
                     replace(pt.description_ecommerce ->> 'nl_NL', ';', '')::text AS description_nl,
                     replace(pt.description_ecommerce ->> 'fr_FR', ';', '')::text AS description_fr,
                     replace(pt.description_ecommerce ->> 'de_DE', ';', '')::text AS description_de,
                     replace(pt.description_ecommerce ->> 'en_US', ';', '')::text AS description_en,
-                   
+                    replace(pt.description_ecommerce ->> 'it_IT', ';', '')::text AS description_it,
+                    replace(pt.description_ecommerce ->> 'es_ES', ';', '')::text AS description_es,
+
                     'https://www.chameleonstars.com/shop/product/' || pt.id AS product_url,
-                    
+
                     -- De hoofdafbeelding (rechtsboven op productniveau)
                     'https://www.chameleonstars.com/web/image/product.template/' || pt.id || '/image_1920' AS main_image,
                     -- Afbeeldingen (Subqueries)
@@ -94,6 +104,9 @@ def init(self):
                     COALESCE(cat_kauf.x_name ->> 'fr_FR', cat_kauf.x_name ->> 'nl_NL') AS kaufland_category,
                     COALESCE(cat_cdisc.x_name ->> 'fr_FR', cat_cdisc.x_name ->> 'nl_NL') AS cdiscount_category,
 
+                    -- Productgroep (veld 'Product group' op het product; basis voor de categorieregels in Channable)
+                    COALESCE(cat_pg.x_name ->> 'fr_FR', cat_pg.x_name ->> 'nl_NL', cat_pg.x_name ->> 'en_US') AS product_group,
+
                     ( SELECT jsonb_object_agg(lower(def.x_name ->> 'en_US'), replace(val.x_value,';', '|'))
                         FROM x_product_property_val val
                         JOIN x_product_property_def def ON val.x_property = def.id
@@ -104,7 +117,7 @@ def init(self):
                 FROM product_product pp
                 JOIN product_template pt ON pp.product_tmpl_id = pt.id
                 LEFT JOIN product_category pc ON pc.id = pt.categ_id
-                
+
                 -- Voorraad
                 LEFT JOIN (
                     SELECT q.product_id, SUM(q.quantity) AS on_hand
@@ -113,18 +126,15 @@ def init(self):
                     WHERE l.usage = 'internal'
                     GROUP BY q.product_id
                 ) sq ON sq.product_id = pp.id
-                
+
                 -- Categorie Joins
                 LEFT JOIN x_marketplace_categori cat_bol ON cat_bol.id = pt.x_studio_bol_category
                 LEFT JOIN x_marketplace_categori cat_kauf ON cat_kauf.id = pt.x_studio_kaufland_category
                 LEFT JOIN x_marketplace_categori cat_cdisc ON cat_cdisc.id = pt.x_studio_cdiscount_category
-                
-                -- Attribuut Joins voor de Many2one velden
-                LEFT JOIN product_attribute_value pav_age ON pav_age.id = pt.x_studio_recommendedage
-                LEFT JOIN product_attribute_value pav_batt ON pav_batt.id = pt.x_studio_battery_type
-                
-                WHERE pp.active = TRUE 
-                  AND pt.active = TRUE 
+                LEFT JOIN x_marketplace_categori cat_pg ON cat_pg.id = pt.x_studio_product_group
+
+                WHERE pp.active = TRUE
+                  AND pt.active = TRUE
                   AND pp.barcode IS NOT NULL
             )
-        """ % self._table)
+        """ % self._table)
