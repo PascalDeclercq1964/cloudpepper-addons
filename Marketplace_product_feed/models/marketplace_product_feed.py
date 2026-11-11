@@ -49,6 +49,24 @@ class MarketplaceProductFeed(models.Model):
     product_group = fields.Char(readonly=True)
     product_properties = fields.Char(readonly=True)
 
+    # Basisgegevens (v1.0.14)
+    weight_kg = fields.Float(readonly=True)
+    weight_g = fields.Integer(readonly=True)
+    volume_m3 = fields.Float(readonly=True)
+    country_of_origin = fields.Char(readonly=True)
+    hs_code = fields.Char(readonly=True)
+    box_length_cm = fields.Float(readonly=True)
+    box_width_cm = fields.Float(readonly=True)
+    box_height_cm = fields.Float(readonly=True)
+    mounted_length_cm = fields.Float(readonly=True)
+    mounted_width_cm = fields.Float(readonly=True)
+    mounted_height_cm = fields.Float(readonly=True)
+    age_from_months = fields.Integer(readonly=True)
+    age_to_months = fields.Integer(readonly=True)
+    players_min = fields.Integer(readonly=True)
+    players_max = fields.Integer(readonly=True)
+    search_terms = fields.Char(readonly=True)
+
     # LET OP: init() moet IN de klasse staan (ingesprongen). Staat ze ernaast,
     # dan voert Odoo ze nooit uit en verandert een module-update de view niet.
     def init(self):
@@ -61,7 +79,8 @@ class MarketplaceProductFeed(models.Model):
                     COALESCE(pp.default_code, pt.default_code) AS sku,
                     pp.barcode AS barcode,
                     pt.list_price AS price,
-                    COALESCE(sq.on_hand, 0) AS qty_available,
+                    -- Nooit negatief: marktplaatsen weigeren een negatieve voorraad
+                    GREATEST(COALESCE(sq.on_hand, 0), 0) AS qty_available,
                     pc.complete_name AS category_name,
 
                     -- Productvertalingen (leeg als de vertaling ontbreekt)
@@ -111,12 +130,39 @@ class MarketplaceProductFeed(models.Model):
                         FROM x_product_property_val val
                         JOIN x_product_property_def def ON val.x_property = def.id
                         WHERE val.x_product = pt.id
-                        )::text AS product_properties
+                        )::text AS product_properties,
+
+                    -- Gewicht en volume (Odoo: kg en m³; leeg als niet ingevuld)
+                    NULLIF(pp.weight, 0) AS weight_kg,
+                    NULLIF(ROUND(pp.weight * 1000), 0)::integer AS weight_g,
+                    NULLIF(pp.volume, 0) AS volume_m3,
+
+                    -- Douane: land van oorsprong (ISO-code, bv. CN) en HS-code
+                    rc.code AS country_of_origin,
+                    NULLIF(pt.hs_code, '') AS hs_code,
+
+                    -- Afmetingen verpakking en gemonteerd product (in Odoo in meter, hier in cm)
+                    NULLIF(ROUND((pt.x_studio_length_box * 100)::numeric, 1), 0) AS box_length_cm,
+                    NULLIF(ROUND((pt.x_studio_width_box * 100)::numeric, 1), 0) AS box_width_cm,
+                    NULLIF(ROUND((pt.x_studio_height_box * 100)::numeric, 1), 0) AS box_height_cm,
+                    NULLIF(ROUND((pt.x_studio_length_mounted * 100)::numeric, 1), 0) AS mounted_length_cm,
+                    NULLIF(ROUND((pt.x_studio_width_mounted * 100)::numeric, 1), 0) AS mounted_width_cm,
+                    NULLIF(ROUND((pt.x_studio_height_mounted * 100)::numeric, 1), 0) AS mounted_height_cm,
+
+                    -- Leeftijd (velden 'Leeftijd van/tot' op het product, in maanden)
+                    pt.x_studio_leeftijd_van AS age_from_months,
+                    pt.x_studio_leeftijd_tot AS age_to_months,
+
+                    -- Aantal spelers en zoektermen
+                    NULLIF(pt.x_studio_playercountmin, 0) AS players_min,
+                    NULLIF(pt.x_studio_playercountmax, 0) AS players_max,
+                    NULLIF(replace(pt.x_studio_searchterms, ';', ','), '') AS search_terms
 
 
                 FROM product_product pp
                 JOIN product_template pt ON pp.product_tmpl_id = pt.id
                 LEFT JOIN product_category pc ON pc.id = pt.categ_id
+                LEFT JOIN res_country rc ON rc.id = pt.country_of_origin
 
                 -- Voorraad
                 LEFT JOIN (

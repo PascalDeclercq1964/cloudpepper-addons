@@ -1,6 +1,6 @@
 {
     "name": "Marketplace Product Feed",
-    "version": "1.0.13",
+    "version": "1.0.14",
     "category": "Sales",
     "summary": "SQL-based product feed for marketplaces",
     "description": "Provides a read-only SQL view exposing products for marketplace feeds",
@@ -9,6 +9,7 @@
         "product",
         "stock",
         "website_sale",  # nodig voor description_ecommerce
+        "stock_delivery",  # hs_code en country_of_origin
     ],
     "data": [
         "security/ir.model.access.csv",
