@@ -65,7 +65,12 @@ class MarketplaceProductFeed(models.Model):
     age_to_months = fields.Integer(readonly=True)
     players_min = fields.Integer(readonly=True)
     players_max = fields.Integer(readonly=True)
-    search_terms = fields.Char(readonly=True)
+    search_terms_nl = fields.Char(readonly=True)
+    search_terms_fr = fields.Char(readonly=True)
+    search_terms_de = fields.Char(readonly=True)
+    search_terms_en = fields.Char(readonly=True)
+    search_terms_it = fields.Char(readonly=True)
+    search_terms_es = fields.Char(readonly=True)
 
     # LET OP: init() moet IN de klasse staan (ingesprongen). Staat ze ernaast,
     # dan voert Odoo ze nooit uit en verandert een module-update de view niet.
@@ -156,7 +161,13 @@ class MarketplaceProductFeed(models.Model):
                     -- Aantal spelers en zoektermen
                     NULLIF(pt.x_studio_playercountmin, 0) AS players_min,
                     NULLIF(pt.x_studio_playercountmax, 0) AS players_max,
-                    NULLIF(replace(pt.x_studio_searchterms, ';', ','), '') AS search_terms
+                    -- Zoektermen is een vertaalbaar veld (jsonb): één kolom per taal, zoals de namen
+                    NULLIF(replace(pt.x_studio_searchterms ->> 'nl_NL', ';', ','), '') AS search_terms_nl,
+                    NULLIF(replace(pt.x_studio_searchterms ->> 'fr_FR', ';', ','), '') AS search_terms_fr,
+                    NULLIF(replace(pt.x_studio_searchterms ->> 'de_DE', ';', ','), '') AS search_terms_de,
+                    NULLIF(replace(pt.x_studio_searchterms ->> 'en_US', ';', ','), '') AS search_terms_en,
+                    NULLIF(replace(pt.x_studio_searchterms ->> 'it_IT', ';', ','), '') AS search_terms_it,
+                    NULLIF(replace(pt.x_studio_searchterms ->> 'es_ES', ';', ','), '') AS search_terms_es
 
 
                 FROM product_product pp
