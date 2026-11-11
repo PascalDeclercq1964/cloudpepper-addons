@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_template_form_view_marketplace" model="ir.ui.view">
+        <field name="name">product.template.form.marketplace.feedback</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Marktplaatsen" name="marketplace_feedback">
+                    <div class="alert alert-success" role="alert" invisible="marketplace_issue_count">
+                        Geen meldingen van de marktplaatsen bij de laatste import.
+                    </div>
+                    <group invisible="not marketplace_issue_count">
+                        <group>
+                            <field name="marketplace_issue_count" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="marketplace_amazon_type" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="marketplace_issue_ids" nolabel="1" invisible="not marketplace_issue_count">
+                        <list editable="bottom" create="0" delete="0"
+                              decoration-muted="decision in ('channable', 'ignore')">
+                            <field name="marketplace" optional="hide" readonly="1"/>
+                            <field name="field_id" readonly="1"/>
+                            <field name="decision" readonly="1"/>
+                            <field name="property_id" readonly="1"/>
+                            <field name="property_value" placeholder="invullen"
+                                   readonly="decision != 'property' or not property_id"/>
+                            <field name="note" readonly="1"/>
+                            <field name="message" optional="hide" readonly="1"/>
+                            <field name="error_code" optional="hide" readonly="1"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="product_template_list_view_marketplace" model="ir.ui.view">
+        <field name="name">product.template.list.marketplace.feedback</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="inside">
+                <field name="marketplace_issue_count" string="Marktpl." optional="show"
+                       decoration-danger="marketplace_issue_count &gt; 0"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="product_template_search_view_marketplace" model="ir.ui.view">
+        <field name="name">product.template.search.marketplace.feedback</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <separator/>
+                <filter name="marketplace_feedback" string="Met marktplaatsfeedback"
+                        domain="[('marketplace_issue_count', '&gt;', 0)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

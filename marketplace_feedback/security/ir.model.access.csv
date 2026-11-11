@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_marketplace_field_user,marketplace.field gebruiker,model_marketplace_field,base.group_user,1,0,0,0
+access_marketplace_field_manager,marketplace.field beheerder,model_marketplace_field,sales_team.group_sale_manager,1,1,1,1
+access_marketplace_issue_user,marketplace.issue gebruiker,model_marketplace_issue,base.group_user,1,1,0,0
+access_marketplace_issue_manager,marketplace.issue beheerder,model_marketplace_issue,sales_team.group_sale_manager,1,1,1,1
+access_marketplace_feedback_import_user,marketplace.feedback.import gebruiker,model_marketplace_feedback_import,base.group_user,1,0,0,0
+access_marketplace_feedback_import_manager,marketplace.feedback.import beheerder,model_marketplace_feedback_import,sales_team.group_sale_manager,1,1,1,1

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="marketplace_field_view_list" model="ir.ui.view">
+        <field name="name">marketplace.field.list</field>
+        <field name="model">marketplace.field</field>
+        <field name="arch" type="xml">
+            <list string="Marktplaatsvelden" editable="bottom" create="0"
+                  decoration-warning="decision == 'todo'"
+                  decoration-danger="decision == 'property' and not property_id"
+                  decoration-muted="decision == 'ignore'">
+                <header>
+                    <button name="action_create_properties" type="object" string="Properties aanmaken"
+                            display="always"
+                            confirm="Voor elk veld met beslissing 'Property op het artikel' zonder property wordt de 'Nieuwe property' aangemaakt en gekoppeld. Doorgaan?"/>
+                    <button name="action_apply" type="object" string="Toepassen op artikels" display="always"/>
+                </header>
+                <field name="marketplace" optional="hide" readonly="1"/>
+                <field name="name" readonly="1"/>
+                <field name="decision"/>
+                <field name="property_id" invisible="decision != 'property'"
+                       options="{'no_create': True}" context="{'active_test': False}"/>
+                <field name="new_property_name" invisible="decision != 'property' or property_id"
+                       placeholder="Naam nieuwe property"/>
+                <field name="issue_count" string="Artikels"/>
+                <field name="channable_done" string="In Channable" widget="boolean_toggle" optional="show"/>
+                <field name="note" optional="show"/>
+                <field name="error_codes" optional="hide"/>
+                <field name="product_types" optional="hide"/>
+                <field name="last_seen" optional="hide"/>
+                <button name="action_show_issues" type="object" icon="fa-list" title="Artikels"
+                        invisible="not issue_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="marketplace_field_view_form" model="ir.ui.view">
+        <field name="name">marketplace.field.form</field>
+        <field name="model">marketplace.field</field>
+        <field name="arch" type="xml">
+            <form string="Marktplaatsveld">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_show_issues" type="object" class="oe_stat_button" icon="fa-list">
+                            <field name="issue_count" widget="statinfo" string="Artikels"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Beslissing">
+                            <field name="decision"/>
+                            <field name="property_id" invisible="decision != 'property'" context="{'active_test': False}"/>
+                            <field name="new_property_name" invisible="decision != 'property' or property_id"/>
+                            <field name="channable_done"/>
+                        </group>
+                        <group string="Gemeld door de marktplaats">
+                            <field name="marketplace"/>
+                            <field name="key"/>
+                            <field name="error_codes"/>
+                            <field name="product_types"/>
+                            <field name="last_seen"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <label for="example_message"/>
+                    <field name="example_message"/>
+                    <label for="note"/>
+                    <field name="note" placeholder="Wat moet er gebeuren, of hoe is het in Channable opgelost?"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="marketplace_field_view_search" model="ir.ui.view">
+        <field name="name">marketplace.field.search</field>
+        <field name="model">marketplace.field</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="property_id"/>
+                <field name="error_codes"/>
+                <filter name="reported" string="Gemeld bij laatste import" domain="[('issue_count', '&gt;', 0)]"/>
+                <separator/>
+                <filter name="todo" string="Te beslissen" domain="[('decision', '=', 'todo')]"/>
+                <filter name="property_missing" string="Property nog aan te maken"
+                        domain="[('decision', '=', 'property'), ('property_id', '=', False)]"/>
+                <filter name="channable_todo" string="Nog in Channable in te stellen"
+                        domain="[('decision', 'in', ('property', 'odoo', 'channable')), ('channable_done', '=', False)]"/>
+                <separator/>
+                <filter name="inactive" string="Gearchiveerd" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Groeperen op">
+                    <filter name="group_decision" string="Beslissing" context="{'group_by': 'decision'}"/>
+                    <filter name="group_property" string="Property" context="{'group_by': 'property_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_marketplace_field" model="ir.actions.act_window">
+        <field name="name">Marktplaatsvelden</field>
+        <field name="res_model">marketplace.field</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_reported': 1, 'search_default_group_decision': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nog geen velden</p>
+            <p>Importeer de Feedback-CSV van Channable; elk veld dat de marktplaats meldt komt hier.</p>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="marketplace_issue_view_list" model="ir.ui.view">
+        <field name="name">marketplace.issue.list</field>
+        <field name="model">marketplace.issue</field>
+        <field name="arch" type="xml">
+            <list string="Marktplaatsfeedback" editable="bottom" create="0" delete="0"
+                  decoration-muted="decision in ('channable', 'ignore')"
+                  decoration-danger="not product_tmpl_id">
+                <field name="product_tmpl_id" readonly="1"/>
+                <field name="client_ids" optional="hide" readonly="1"/>
+                <field name="field_id" readonly="1"/>
+                <field name="decision" optional="show" readonly="1"/>
+                <field name="property_id" optional="show" readonly="1"/>
+                <field name="property_value" readonly="decision != 'property' or not property_id or not product_tmpl_id"
+                       placeholder="invullen"/>
+                <field name="note" optional="show" readonly="1"/>
+                <field name="message" optional="hide" readonly="1"/>
+                <field name="error_code" optional="hide" readonly="1"/>
+                <field name="level" optional="hide" readonly="1"/>
+                <field name="amazon_product_type" optional="hide" readonly="1"/>
+                <field name="ean" optional="hide" readonly="1"/>
+                <button name="action_open_product" type="object" icon="fa-external-link" title="Product openen"
+                        invisible="not product_tmpl_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="marketplace_issue_view_search" model="ir.ui.view">
+        <field name="name">marketplace.issue.search</field>
+        <field name="model">marketplace.issue</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="product_tmpl_id"/>
+                <field name="field_id"/>
+                <field name="property_id"/>
+                <field name="client_ids"/>
+                <field name="ean"/>
+                <field name="error_code"/>
+                <field name="message"/>
+                <filter name="value_missing" string="Waarde ontbreekt" domain="[('value_missing', '=', True)]"/>
+                <separator/>
+                <filter name="property" string="Property op het artikel" domain="[('decision', '=', 'property')]"/>
+                <filter name="odoo" string="Ander gegeven in Odoo" domain="[('decision', '=', 'odoo')]"/>
+                <filter name="channable" string="Opgelost in Channable" domain="[('decision', '=', 'channable')]"/>
+                <filter name="manual" string="Handmatig" domain="[('decision', '=', 'manual')]"/>
+                <filter name="todo" string="Te beslissen" domain="[('decision', '=', 'todo')]"/>
+                <separator/>
+                <filter name="to_handle" string="Te doen in Odoo" domain="[('decision', 'in', ('property', 'odoo'))]"/>
+                <filter name="unmatched" string="Niet gevonden in Odoo" domain="[('product_tmpl_id', '=', False)]"/>
+                <group expand="0" string="Groeperen op">
+                    <filter name="group_field" string="Veld" context="{'group_by': 'field_id'}"/>
+                    <filter name="group_product" string="Product" context="{'group_by': 'product_tmpl_id'}"/>
+                    <filter name="group_decision" string="Beslissing" context="{'group_by': 'decision'}"/>
+                    <filter name="group_type" string="Amazon-producttype" context="{'group_by': 'amazon_product_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_marketplace_issue" model="ir.actions.act_window">
+        <field name="name">Marktplaatsfeedback</field>
+        <field name="res_model">marketplace.issue</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'search_default_to_handle': 1, 'search_default_group_product': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Geen meldingen</p>
+            <p>Importeer de Feedback-CSV van Channable via Configuratie › Marktplaatsen › Feedback importeren.</p>
+        </field>
+    </record>
+
+    <record id="action_marketplace_fill" model="ir.actions.act_window">
+        <field name="name">Ontbrekende properties invullen</field>
+        <field name="res_model">marketplace.issue</field>
+        <field name="view_mode">list</field>
+        <field name="domain">[('decision', '=', 'property'), ('product_tmpl_id', '!=', False)]</field>
+        <field name="context">{'search_default_value_missing': 1, 'search_default_group_field': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Alles ingevuld</p>
+            <p>Geen enkel artikel mist nog een property die de marktplaats vroeg.</p>
+        </field>
+    </record>
+</odoo>

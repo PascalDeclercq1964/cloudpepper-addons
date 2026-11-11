@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Dagelijks werk: bij de producten -->
+    <menuitem id="menu_marketplace_issue" name="Marktplaatsfeedback"
+              parent="sale.product_menu_catalog" action="action_marketplace_issue" sequence="90"/>
+    <menuitem id="menu_marketplace_fill" name="Ontbrekende properties invullen"
+              parent="sale.product_menu_catalog" action="action_marketplace_fill" sequence="91"/>
+    <!-- Instellingen en imports -->
+    <menuitem id="menu_marketplace_root" name="Marktplaatsen" parent="sale.menu_sale_config" sequence="90"/>
+    <menuitem id="menu_marketplace_import" name="Feedback importeren"
+              parent="menu_marketplace_root" action="action_marketplace_feedback_import" sequence="10"/>
+    <menuitem id="menu_marketplace_field" name="Marktplaatsvelden"
+              parent="menu_marketplace_root" action="action_marketplace_field" sequence="20"/>
+</odoo>
